@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yoga Sequence Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #7a9e7e; --sage-light: #b5cdb7; --sage-dark: #4a6b4e;
+    --cream: #f7f3ee; --warm: #e8ddd0; --clay: #c4956a; --clay-light: #e8c9a8;
+    --ink: #2a2420; --ink-soft: #5a4f48; --white: #fdfaf7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; font-size: 15px; }
+
+  header { background: var(--ink); color: var(--cream); padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(42,36,32,0.3); }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; letter-spacing: 0.04em; }
+  .logo span { color: var(--sage-light); font-style: italic; }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  .btn { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 0.03em; transition: all 0.2s; white-space: nowrap; }
+  .btn-primary { background: var(--sage); color: white; }
+  .btn-primary:hover { background: var(--sage-dark); }
+  .btn-secondary { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.3); }
+  .btn-secondary:hover { border-color: var(--sage-light); color: var(--sage-light); }
+  .btn-clay { background: var(--clay); color: white; }
+  .btn-clay:hover { background: #b07d52; }
+  .btn-ghost { background: transparent; color: var(--ink-soft); border: 1px solid var(--warm); }
+  .btn-ghost:hover { border-color: var(--sage); color: var(--sage-dark); }
+  .btn-danger { background: transparent; color: #c0392b; border: 1px solid #e8c0bc; font-size: 12px; padding: 6px 14px; }
+  .btn-danger:hover { background: #fdf0ef; }
+
+  .app { display: flex; min-height: calc(100vh - 62px); }
+
+  /* SIDEBAR */
+  .sidebar { width: 280px; min-width: 280px; background: var(--white); border-right: 1px solid var(--warm); display: flex; flex-direction: column; }
+  .sidebar-header { padding: 18px 18px 12px; border-bottom: 1px solid var(--warm); display: flex; justify-content: space-between; align-items: center; }
+  .sidebar-title { font-size: 0.75rem; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.07em; text-transform: uppercase; }
+  .search-box { padding: 10px 16px; border-bottom: 1px solid var(--warm); }
+  .search-box input { width: 100%; padding: 7px 11px; border: 1px solid var(--warm); border-radius: 4px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); outline: none; }
+  .search-box input:focus { border-color: var(--sage); }
+  .search-box input::placeholder { color: #bbb; }
+  .class-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+  .class-item { padding: 12px 18px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; }
+  .class-item:hover { background: var(--cream); border-left-color: var(--sage-light); }
+  .class-item.active { background: #edf3ee; border-left-color: var(--sage); }
+  .class-item-name { font-weight: 500; font-size: 14px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .class-item-meta { font-size: 12px; color: var(--ink-soft); display: flex; gap: 8px; align-items: center; }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-Beginner { background: #e8f4e8; color: #4a7a4a; }
+  .badge-Intermediate { background: #fef3e2; color: #9a6a20; }
+  .badge-Advanced { background: #fde8e8; color: #9a3030; }
+  .badge-AllLevels { background: #ece8f4; color: #5a4a7a; }
+  .empty-sidebar { padding: 36px 18px; text-align: center; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }
+
+  .main { flex: 1; overflow-y: auto; }
+  .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; padding: 40px; }
+  .welcome-icon { font-size: 3.5rem; margin-bottom: 20px; opacity: 0.6; }
+  .welcome h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; margin-bottom: 10px; }
+  .welcome p { color: var(--ink-soft); max-width: 420px; line-height: 1.7; margin-bottom: 24px; }
+
+  .class-view { padding: 34px 40px; max-width: 820px; }
+  .class-header { margin-bottom: 26px; padding-bottom: 20px; border-bottom: 1px solid var(--warm); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+  .class-header-left { flex: 1; }
+  .class-title-input { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; border: none; background: transparent; color: var(--ink); width: 100%; outline: none; margin-bottom: 12px; }
+  .class-title-input::placeholder { color: #ccc; }
+  .meta-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .meta-field { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-soft); }
+  .meta-field label { font-weight: 500; white-space: nowrap; }
+  .meta-field input, .meta-field select { border: 1px solid var(--warm); border-radius: 4px; padding: 4px 9px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--cream); color: var(--ink); outline: none; }
+  .meta-field input:focus, .meta-field select:focus { border-color: var(--sage); }
+
+  .section { margin-bottom: 26px; }
+  .section-title { font-size: 0.72rem; font-weight: 600; color: var(--sage-dark); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--warm); }
+
+  textarea.field { width: 100%; padding: 10px 13px; border: 1px solid var(--warm); border-radius: 6px; background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); resize: vertical; min-height: 70px; outline: none; line-height: 1.6; }
+  textarea.field:focus { border-color: var(--sage); }
+  input.field { width: 100%; padding: 9px 13px; border: 1px solid var(--warm); border-radius: 6px; background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); outline: none; }
+  input.field:focus { border-color: var(--sage); }
+
+  .spotify-link { display: inline-flex; align-items: center; gap: 7px; padding: 7px 16px; background: #1db954; color: white; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: 500; margin-top: 9px; transition: background 0.2s; }
+  .spotify-link:hover { background: #17a349; }
+
+  /* PROPS */
+  .props-palette { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .prop-chip { padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1.5px solid var(--warm); background: var(--cream); color: var(--ink-soft); transition: all 0.15s; user-select: none; }
+  .prop-chip:hover { border-color: var(--clay); color: var(--clay); }
+  .prop-chip.selected { background: var(--clay-light); border-color: var(--clay); color: var(--ink); font-weight: 500; }
+  .props-custom { display: flex; gap: 8px; margin-top: 6px; }
+  .props-custom input { flex: 1; padding: 6px 11px; border: 1px solid var(--warm); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--white); outline: none; }
+  .props-custom input:focus { border-color: var(--sage); }
+  .custom-props-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+
+  /* POSES */
+  .pose-list { display: flex; flex-direction: column; gap: 10px; }
+  .pose-card { background: var(--white); border: 1px solid var(--warm); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+  .pose-card:hover { border-color: var(--sage-light); }
+  .pose-card-body { padding: 14px 16px; position: relative; }
+  .pose-card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .pose-number { width: 24px; height: 24px; border-radius: 50%; background: var(--sage); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 5px; }
+  .pose-name-col { flex: 1; min-width: 0; }
+  .pose-name-input { width: 100%; border: none; border-bottom: 1px solid var(--warm); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: var(--ink); padding: 3px 0; outline: none; }
+  .pose-name-input:focus { border-bottom-color: var(--sage); }
+  .pose-sanskrit { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 13px; color: var(--sage-dark); margin-top: 3px; min-height: 18px; transition: all 0.3s; }
+  .pose-sanskrit.not-found { color: #ccc; font-style: italic; }
+
+  .pose-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 9px; }
+  .pose-field { display: flex; flex-direction: column; gap: 3px; }
+  .pose-field label { font-size: 10px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
+  .pose-field input, .pose-field select { padding: 5px 9px; border: 1px solid var(--warm); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--cream); color: var(--ink); outline: none; }
+  .pose-field input:focus, .pose-field select:focus { border-color: var(--sage); }
+  .pose-notes input { width: 100%; padding: 6px 9px; border: 1px solid var(--warm); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--cream); color: var(--ink); outline: none; }
+  .pose-notes input:focus { border-color: var(--sage); }
+
+  .pose-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 3px; }
+  .pose-action-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 14px; padding: 2px 5px; border-radius: 3px; transition: all 0.15s; }
+  .pose-action-btn:hover { color: var(--ink-soft); background: var(--warm); }
+  .pose-action-btn.del:hover { color: #c0392b; background: #fde8e8; }
+
+  .transition-row { display: flex; align-items: center; gap: 10px; padding: 6px 16px; background: var(--cream); border-top: 1px solid var(--warm); }
+  .transition-row span { color: var(--sage-light); }
+  .transition-row input { flex: 1; border: none; background: transparent; font-size: 12px; font-style: italic; color: var(--ink-soft); outline: none; font-family: 'DM Sans', sans-serif; }
+
+  .add-pose-btn { width: 100%; padding: 13px; border: 2px dashed var(--warm); border-radius: 8px; background: transparent; color: var(--ink-soft); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; margin-top: 6px; }
+  .add-pose-btn:hover { border-color: var(--sage); color: var(--sage-dark); background: #f0f5f0; }
+
+  .save-bar { position: sticky; bottom: 0; background: var(--white); border-top: 1px solid var(--warm); padding: 13px 40px; display: flex; gap: 10px; align-items: center; }
+  .save-status { font-size: 12px; color: var(--ink-soft); margin-right: auto; font-style: italic; }
+  .date-label { font-size: 11px; color: #bbb; margin-top: 3px; }
+
+  /* MODALS */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(42,36,32,0.5); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--white); border-radius: 10px; padding: 30px; max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(42,36,32,0.3); }
+  .modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; margin-bottom: 8px; }
+  .modal p { color: var(--ink-soft); font-size: 14px; line-height: 1.6; margin-bottom: 18px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* SANSKRIT BADGE */
+  .sanskrit-badge { display: inline-block; background: #edf3ee; border: 1px solid var(--sage-light); color: var(--sage-dark); border-radius: 4px; font-size: 10px; font-weight: 600; padding: 1px 6px; letter-spacing: 0.04em; margin-left: 6px; vertical-align: middle; font-style: normal; font-family: 'DM Sans', sans-serif; }
+
+  @media (max-width: 700px) {
+    .sidebar { width: 100%; min-width: unset; }
+    .app { flex-direction: column; }
+    .class-view { padding: 20px; }
+    .pose-fields { grid-template-columns: 1fr; }
+    header { padding: 14px 20px; }
+    .save-bar { padding: 12px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">prana <span>flow</span></div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" id="drive-btn" onclick="connectDrive()">☁ Google Drive</button>
+    <button class="btn btn-primary" onclick="newClass()">+ New Class</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">My Classes</span>
+      <span id="class-count" style="font-size:12px;color:#bbb;">0 saved</span>
+    </div>
+    <div class="search-box">
+      <input type="text" placeholder="Search classes…" oninput="filterClasses(this.value)" id="search-input">
+    </div>
+    <div class="class-list" id="class-list">
+      <div class="empty-sidebar"><div style="font-size:2rem;margin-bottom:10px;">🌿</div>No classes yet.<br>Create your first sequence.</div>
+    </div>
+  </aside>
+
+  <main class="main" id="main-area">
+    <div class="welcome">
+      <div class="welcome-icon">🧘</div>
+      <h2>Your Yoga Class Planner</h2>
+      <p>Build sequences, attach playlists, and save your classes. Sanskrit names appear automatically as you type each pose.</p>
+      <button class="btn btn-primary" style="padding:12px 28px;font-size:14px;" onclick="newClass()">Create First Class</button>
+    </div>
+  </main>
+</div>
+
+<!-- Delete modal -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <h3>Delete this class?</h3>
+    <p>This will permanently remove the class and all its poses.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('delete-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drive modal -->
+<div class="modal-overlay" id="drive-modal">
+  <div class="modal">
+    <h3>Connect Google Drive</h3>
+    <p>Your classes will sync to a single file in your Drive, accessible from any device.</p>
+    <div id="drive-modal-content">
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('drive-modal')">Not now</button>
+        <button class="btn btn-primary" onclick="showDriveInput()">Connect Drive</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SANSKRIT LOOKUP TABLE (200+ poses, completely free) ────────
+const SANSKRIT = {
+  // Standing poses
+  "mountain pose": "Tadasana",
+  "tadasana": "Tadasana",
+  "warrior i": "Virabhadrasana I",
+  "warrior 1": "Virabhadrasana I",
+  "warrior ii": "Virabhadrasana II",
+  "warrior 2": "Virabhadrasana II",
+  "warrior iii": "Virabhadrasana III",
+  "warrior 3": "Virabhadrasana III",
+  "warrior": "Virabhadrasana",
+  "triangle pose": "Trikonasana",
+  "extended triangle": "Utthita Trikonasana",
+  "trikonasana": "Trikonasana",
+  "tree pose": "Vrksasana",
+  "vrksasana": "Vrksasana",
+  "chair pose": "Utkatasana",
+  "utkatasana": "Utkatasana",
+  "fierce pose": "Utkatasana",
+  "standing forward fold": "Uttanasana",
+  "forward fold": "Uttanasana",
+  "uttanasana": "Uttanasana",
+  "half standing forward fold": "Ardha Uttanasana",
+  "halfway lift": "Ardha Uttanasana",
+  "ardha uttanasana": "Ardha Uttanasana",
+  "crescent lunge": "Anjaneyasana",
+  "low lunge": "Anjaneyasana",
+  "anjaneyasana": "Anjaneyasana",
+  "high lunge": "Utthita Ashwa Sanchalanasana",
+  "extended side angle": "Utthita Parsvakonasana",
+  "side angle": "Parsvakonasana",
+  "parsvakonasana": "Parsvakonasana",
+  "pyramid pose": "Parsvottanasana",
+  "parsvottanasana": "Parsvottanasana",
+  "revolved triangle": "Parivrtta Trikonasana",
+  "revolved side angle": "Parivrtta Parsvakonasana",
+  "eagle pose": "Garudasana",
+  "garudasana": "Garudasana",
+  "half moon": "Ardha Chandrasana",
+  "ardha chandrasana": "Ardha Chandrasana",
+  "standing split": "Urdhva Prasarita Eka Padasana",
+  "warrior i with arms": "Virabhadrasana I",
+  "goddess pose": "Utkata Konasana",
+  "utkata konasana": "Utkata Konasana",
+  "wide legged forward fold": "Prasarita Padottanasana",
+  "prasarita padottanasana": "Prasarita Padottanasana",
+  "garland pose": "Malasana",
+  "malasana": "Malasana",
+  "squat": "Malasana",
+  "dancer pose": "Natarajasana",
+  "natarajasana": "Natarajasana",
+  "lord of the dance": "Natarajasana",
+  "standing bow": "Natarajasana",
+  "mountain": "Tadasana",
+
+  // Seated poses
+  "staff pose": "Dandasana",
+  "dandasana": "Dandasana",
+  "seated forward fold": "Paschimottanasana",
+  "paschimottanasana": "Paschimottanasana",
+  "bound angle": "Baddha Konasana",
+  "butterfly pose": "Baddha Konasana",
+  "cobbler's pose": "Baddha Konasana",
+  "baddha konasana": "Baddha Konasana",
+  "wide angle seated forward fold": "Upavistha Konasana",
+  "upavistha konasana": "Upavistha Konasana",
+  "half lord of the fishes": "Ardha Matsyendrasana",
+  "seated spinal twist": "Ardha Matsyendrasana",
+  "ardha matsyendrasana": "Ardha Matsyendrasana",
+  "hero pose": "Virasana",
+  "virasana": "Virasana",
+  "lotus pose": "Padmasana",
+  "padmasana": "Padmasana",
+  "half lotus": "Ardha Padmasana",
+  "easy pose": "Sukhasana",
+  "sukhasana": "Sukhasana",
+  "fire log pose": "Agnistambhasana",
+  "agnistambhasana": "Agnistambhasana",
+  "double pigeon": "Agnistambhasana",
+  "cow face pose": "Gomukhasana",
+  "gomukhasana": "Gomukhasana",
+  "head to knee pose": "Janu Sirsasana",
+  "janu sirsasana": "Janu Sirsasana",
+  "boat pose": "Navasana",
+  "navasana": "Navasana",
+  "half boat": "Ardha Navasana",
+  "lion pose": "Simhasana",
+  "simhasana": "Simhasana",
+
+  // Supine / floor poses
+  "corpse pose": "Savasana",
+  "savasana": "Savasana",
+  "shavasana": "Savasana",
+  "happy baby": "Ananda Balasana",
+  "ananda balasana": "Ananda Balasana",
+  "knees to chest": "Apanasana",
+  "apanasana": "Apanasana",
+  "supine twist": "Supta Matsyendrasana",
+  "reclined twist": "Supta Matsyendrasana",
+  "supta matsyendrasana": "Supta Matsyendrasana",
+  "bridge pose": "Setu Bandha Sarvangasana",
+  "setu bandha": "Setu Bandha Sarvangasana",
+  "setu bandha sarvangasana": "Setu Bandha Sarvangasana",
+  "wheel pose": "Urdhva Dhanurasana",
+  "upward bow": "Urdhva Dhanurasana",
+  "urdhva dhanurasana": "Urdhva Dhanurasana",
+  "supported bridge": "Setu Bandha Sarvangasana",
+  "fish pose": "Matsyasana",
+  "matsyasana": "Matsyasana",
+  "legs up the wall": "Viparita Karani",
+  "viparita karani": "Viparita Karani",
+  "shoulder stand": "Sarvangasana",
+  "sarvangasana": "Sarvangasana",
+  "plow pose": "Halasana",
+  "halasana": "Halasana",
+  "reclining hero": "Supta Virasana",
+  "supta virasana": "Supta Virasana",
+  "reclined bound angle": "Supta Baddha Konasana",
+  "supta baddha konasana": "Supta Baddha Konasana",
+  "wind relieving pose": "Pavanamuktasana",
+  "pavanamuktasana": "Pavanamuktasana",
+  "reclining hand to big toe": "Supta Padangusthasana",
+  "supta padangusthasana": "Supta Padangusthasana",
+
+  // Prone / face down
+  "cobra pose": "Bhujangasana",
+  "bhujangasana": "Bhujangasana",
+  "upward facing dog": "Urdhva Mukha Svanasana",
+  "up dog": "Urdhva Mukha Svanasana",
+  "urdhva mukha svanasana": "Urdhva Mukha Svanasana",
+  "locust pose": "Salabhasana",
+  "salabhasana": "Salabhasana",
+  "bow pose": "Dhanurasana",
+  "dhanurasana": "Dhanurasana",
+  "sphinx pose": "Salamba Bhujangasana",
+  "salamba bhujangasana": "Salamba Bhujangasana",
+  "baby cobra": "Ardha Bhujangasana",
+  "frog pose": "Mandukasana",
+  "mandukasana": "Mandukasana",
+  "half frog": "Ardha Bhekasana",
+  "crocodile pose": "Makarasana",
+  "makarasana": "Makarasana",
+
+  // All fours / transitions
+  "downward facing dog": "Adho Mukha Svanasana",
+  "downward dog": "Adho Mukha Svanasana",
+  "down dog": "Adho Mukha Svanasana",
+  "adho mukha svanasana": "Adho Mukha Svanasana",
+  "cat pose": "Marjaryasana",
+  "marjaryasana": "Marjaryasana",
+  "cow pose": "Bitilasana",
+  "bitilasana": "Bitilasana",
+  "cat cow": "Marjaryasana-Bitilasana",
+  "cat-cow": "Marjaryasana-Bitilasana",
+  "thread the needle": "Parsva Balasana",
+  "parsva balasana": "Parsva Balasana",
+  "child's pose": "Balasana",
+  "childs pose": "Balasana",
+  "balasana": "Balasana",
+  "extended child's pose": "Utthita Balasana",
+  "puppy pose": "Uttana Shishosana",
+  "uttana shishosana": "Uttana Shishosana",
+  "table top": "Bharmanasana",
+  "tabletop": "Bharmanasana",
+  "bharmanasana": "Bharmanasana",
+  "bird dog": "Dandayamna Bharmanasana",
+  "plank pose": "Phalakasana",
+  "phalakasana": "Phalakasana",
+  "plank": "Phalakasana",
+  "forearm plank": "Makara Adho Mukha Svanasana",
+  "low plank": "Chaturanga Dandasana",
+  "chaturanga": "Chaturanga Dandasana",
+  "chaturanga dandasana": "Chaturanga Dandasana",
+  "four limbed staff": "Chaturanga Dandasana",
+  "side plank": "Vasisthasana",
+  "vasisthasana": "Vasisthasana",
+
+  // Hip openers
+  "pigeon pose": "Eka Pada Rajakapotasana",
+  "eka pada rajakapotasana": "Eka Pada Rajakapotasana",
+  "sleeping pigeon": "Supta Kapotasana",
+  "reclined pigeon": "Supta Kapotasana",
+  "eye of needle": "Sucirandhrasana",
+  "figure four": "Sucirandhrasana",
+  "lizard pose": "Utthan Pristhasana",
+  "utthan pristhasana": "Utthan Pristhasana",
+  "monkey pose": "Hanumanasana",
+  "hanumanasana": "Hanumanasana",
+  "splits": "Hanumanasana",
+  "happy baby pose": "Ananda Balasana",
+
+  // Arm balances & inversions
+  "crow pose": "Bakasana",
+  "bakasana": "Bakasana",
+  "crane pose": "Bakasana",
+  "headstand": "Sirsasana",
+  "sirsasana": "Sirsasana",
+  "forearm stand": "Pincha Mayurasana",
+  "pincha mayurasana": "Pincha Mayurasana",
+  "handstand": "Adho Mukha Vrksasana",
+  "adho mukha vrksasana": "Adho Mukha Vrksasana",
+  "scale pose": "Tolasana",
+  "tolasana": "Tolasana",
+  "firefly pose": "Tittibhasana",
+  "tittibhasana": "Tittibhasana",
+  "eight angle pose": "Astavakrasana",
+  "astavakrasana": "Astavakrasana",
+
+  // Twists
+  "revolved chair": "Parivrtta Utkatasana",
+  "parivrtta utkatasana": "Parivrtta Utkatasana",
+  "twisted chair": "Parivrtta Utkatasana",
+  "revolved lunge": "Parivrtta Anjaneyasana",
+  "parivrtta anjaneyasana": "Parivrtta Anjaneyasana",
+
+  // Pranayama & meditation
+  "mountain breath": "Tadasana",
+  "alternate nostril breathing": "Nadi Shodhana",
+  "nadi shodhana": "Nadi Shodhana",
+  "ujjayi breath": "Ujjayi Pranayama",
+  "ujjayi": "Ujjayi Pranayama",
+  "kapalabhati": "Kapalabhati Pranayama",
+  "breath of fire": "Kapalabhati Pranayama",
+
+  // Restorative
+  "supported fish": "Salamba Matsyasana",
+  "supported child's pose": "Salamba Balasana",
+  "constructive rest": "Savasana variation",
+  "relaxation pose": "Savasana",
+};
+
+function lookupSanskrit(englishName) {
+  if (!englishName) return '';
+  const key = englishName.trim().toLowerCase()
+    .replace(/[''']/g, "'")
+    .replace(/\s+/g, ' ');
+  // Exact match
+  if (SANSKRIT[key]) return SANSKRIT[key];
+  // Partial match — find best key that the input contains or is contained by
+  for (const k of Object.keys(SANSKRIT)) {
+    if (key.includes(k) || k.includes(key)) return SANSKRIT[k];
+  }
+  return '';
+}
+
+// ── STATE ──────────────────────────────────────────────────────
+let classes = JSON.parse(localStorage.getItem('yogaClasses') || '[]');
+let currentClassId = null;
+let deleteTargetId = null;
+let driveConnected = false, gapiInited = false, gisInited = false, tokenClient = null;
+const DRIVE_FILE = 'yoga-planner-data.json';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const PRESET_PROPS = ['Block','Strap','Bolster','Blanket','Wall','Chair','Eye Pillow','Sandbag','Wheel','Brick'];
+
+// ── MODAL HELPERS ──────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ── SIDEBAR ────────────────────────────────────────────────────
+function renderSidebar(filter='') {
+  const list = document.getElementById('class-list');
+  document.getElementById('class-count').textContent = classes.length + ' saved';
+  const filtered = filter ? classes.filter(c => (c.name||'').toLowerCase().includes(filter.toLowerCase())) : classes;
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-sidebar">${filter?'🔍 No matches.':'🌿 No classes yet.<br>Create your first sequence.'}</div>`;
+    return;
+  }
+  list.innerHTML = [...filtered].sort((a,b)=>b.createdAt-a.createdAt).map(c=>`
+    <div class="class-item ${c.id===currentClassId?'active':''}" onclick="openClass('${c.id}')">
+      <div class="class-item-name">${esc(c.name||'Untitled Class')}</div>
+      <div class="class-item-meta">
+        <span>${c.duration?c.duration+' min':'--'}</span>
+        <span class="badge badge-${(c.difficulty||'AllLevels').replace(/\s/g,'')}">${c.difficulty||'All Levels'}</span>
+      </div>
+      <div class="date-label">${(c.poses||[]).length} poses · ${new Date(c.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+    </div>`).join('');
+}
+function filterClasses(v) { renderSidebar(v); }
+
+// ── CLASS CRUD ─────────────────────────────────────────────────
+function newClass() {
+  const cls = { id:'c'+Date.now(), name:'', duration:'', difficulty:'All Levels', intentions:'', spotifyUrl:'', props:[], poses:[], createdAt:Date.now() };
+  classes.push(cls); save();
+  renderSidebar(document.getElementById('search-input').value);
+  openClass(cls.id);
+}
+function openClass(id) {
+  currentClassId = id;
+  const cls = classes.find(c=>c.id===id); if (!cls) return;
+  renderSidebar(document.getElementById('search-input').value);
+  renderClassView(cls);
+}
+function getClass() { return classes.find(c=>c.id===currentClassId); }
+
+// ── RENDER CLASS VIEW ──────────────────────────────────────────
+function renderClassView(cls) {
+  const selProps = new Set(cls.props||[]);
+  document.getElementById('main-area').innerHTML = `
+    <div class="class-view">
+      <div class="class-header">
+        <div class="class-header-left">
+          <input class="class-title-input" placeholder="Class name or theme…" value="${esc(cls.name||'')}" oninput="updateField('name',this.value)">
+          <div class="meta-row">
+            <div class="meta-field"><label>Duration</label><input type="number" min="1" max="240" value="${cls.duration||''}" placeholder="60" style="width:62px;" oninput="updateField('duration',this.value)"> min</div>
+            <div class="meta-field"><label>Level</label>
+              <select onchange="updateField('difficulty',this.value)">
+                ${['All Levels','Beginner','Intermediate','Advanced'].map(l=>`<option value="${l}" ${cls.difficulty===l?'selected':''}>${l}</option>`).join('')}
+              </select>
+            </div>
+            <div class="meta-field" style="color:#bbb;font-size:11px;">Created ${new Date(cls.createdAt).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="deleteClass('${cls.id}')">✕ Delete</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Intentions & Notes</div>
+        <textarea class="field" placeholder="Set the intention for this class…" rows="3" oninput="updateField('intentions',this.value)">${esc(cls.intentions||'')}</textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Spotify Playlist</div>
+        <input class="field" id="spotify-inp" type="url" placeholder="Paste Spotify playlist link…" value="${esc(cls.spotifyUrl||'')}" oninput="updateField('spotifyUrl',this.value)">
+        ${cls.spotifyUrl?`<a href="${cls.spotifyUrl}" target="_blank" class="spotify-link">▶ Open in Spotify</a>`:''}
+      </div>
+
+      <div class="section">
+        <div class="section-title">Props Needed</div>
+        <div class="props-palette" id="props-palette">
+          ${PRESET_PROPS.map(p=>`<div class="prop-chip ${selProps.has(p)?'selected':''}" onclick="toggleProp('${p}',this)">${p}</div>`).join('')}
+        </div>
+        <div class="props-custom">
+          <input type="text" id="custom-prop-inp" placeholder="Custom prop…" onkeydown="if(event.key==='Enter')addCustomProp()">
+          <button class="btn btn-ghost" onclick="addCustomProp()">Add</button>
+        </div>
+        <div class="custom-props-row" id="custom-props-row">
+          ${(cls.props||[]).filter(p=>!PRESET_PROPS.includes(p)).map(p=>`
+            <div class="prop-chip selected">${p} <button onclick="removeCustomProp('${p}')" style="background:none;border:none;cursor:pointer;color:var(--clay);margin-left:2px;">×</button></div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Sequence <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft);font-size:11px;font-family:'DM Sans';">(Sanskrit names appear automatically)</span></div>
+        <div class="pose-list" id="pose-list">${renderPoses(cls.poses||[])}</div>
+        <button class="add-pose-btn" onclick="addPose()">+ Add Pose</button>
+      </div>
+    </div>
+    <div class="save-bar">
+      <span class="save-status" id="save-status">All changes saved</span>
+      <button class="btn btn-ghost" onclick="exportJSON()">⬇ Export</button>
+      <button class="btn btn-clay" onclick="saveToDrive()">☁ Save to Drive</button>
+    </div>
+  `;
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ── RENDER POSES ───────────────────────────────────────────────
+function renderPoses(poses) {
+  return poses.map((p,i) => poseCardHTML(p,i,poses.length)).join('');
+}
+
+function poseCardHTML(p, i, total) {
+  const sanskrit = p.name ? (p.sanskrit || lookupSanskrit(p.name)) : '';
+  const sanskritHTML = sanskrit
+    ? `<div class="pose-sanskrit">${esc(sanskrit)}</div>`
+    : (p.name ? `<div class="pose-sanskrit not-found" style="font-size:11px;">Sanskrit not found — type to search</div>` : '');
+
+  return `
+    <div id="pose-card-${i}">
+      <div class="pose-card">
+        <div class="pose-card-body">
+          <div class="pose-actions">
+            ${i>0?`<button class="pose-action-btn" onclick="movePose(${i},-1)">↑</button>`:''}
+            ${i<total-1?`<button class="pose-action-btn" onclick="movePose(${i},1)">↓</button>`:''}
+            <button class="pose-action-btn del" onclick="removePose(${i})">✕</button>
+          </div>
+          <div class="pose-card-header">
+            <div class="pose-number">${i+1}</div>
+            <div class="pose-name-col">
+              <input class="pose-name-input" placeholder="Pose name (e.g. Downward Dog)…" value="${esc(p.name||'')}"
+                oninput="updatePoseAndSanskrit(${i},this.value)">
+              ${sanskritHTML}
+            </div>
+          </div>
+          <div class="pose-fields">
+            <div class="pose-field">
+              <label>Duration / Breaths</label>
+              <input type="text" value="${esc(p.duration||'')}" placeholder="5 breaths" oninput="updatePose(${i},'duration',this.value)">
+            </div>
+            <div class="pose-field">
+              <label>Side</label>
+              <select onchange="updatePose(${i},'side',this.value)">
+                ${['both','left','right','n/a'].map(s=>`<option value="${s}" ${p.side===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="pose-notes">
+            <input type="text" placeholder="Cues or notes…" value="${esc(p.notes||'')}" oninput="updatePose(${i},'notes',this.value)">
+          </div>
+        </div>
+        ${i<total-1?`<div class="transition-row"><span>↓</span><input type="text" placeholder="transition note…" value="${esc(p.transition||'')}" oninput="updatePose(${i},'transition',this.value)"></div>`:''}
+      </div>
+    </div>
+  `;
+}
+
+// ── UPDATE HELPERS ─────────────────────────────────────────────
+function updateField(field, value) {
+  const cls = getClass(); if (!cls) return;
+  cls[field] = value; save();
+  if (field==='name') renderSidebar(document.getElementById('search-input').value);
+  if (field==='spotifyUrl' && value.includes('spotify')) {
+    const inp = document.getElementById('spotify-inp');
+    if (inp && !inp.parentNode.querySelector('.spotify-link')) {
+      const a = document.createElement('a');
+      a.href=value; a.target='_blank'; a.className='spotify-link'; a.textContent='▶ Open in Spotify';
+      inp.parentNode.appendChild(a);
+    }
+  }
+}
+
+function updatePose(i, field, value) {
+  const cls = getClass(); if (!cls) return;
+  cls.poses[i][field] = value; save();
+}
+
+function updatePoseAndSanskrit(i, value) {
+  const cls = getClass(); if (!cls) return;
+  cls.poses[i].name = value;
+  const sanskrit = lookupSanskrit(value);
+  cls.poses[i].sanskrit = sanskrit;
+  save();
+  // Update just the sanskrit display live
+  const card = document.getElementById('pose-card-' + i);
+  if (card) {
+    const el = card.querySelector('.pose-sanskrit');
+    if (el) {
+      if (sanskrit) { el.className='pose-sanskrit'; el.textContent=sanskrit; }
+      else if (value.trim()) { el.className='pose-sanskrit not-found'; el.textContent='Sanskrit not found'; }
+      else { el.textContent=''; }
+    } else if (sanskrit || value.trim()) {
+      // Create it
+      const col = card.querySelector('.pose-name-col');
+      const div = document.createElement('div');
+      div.className = sanskrit ? 'pose-sanskrit' : 'pose-sanskrit not-found';
+      div.textContent = sanskrit || 'Sanskrit not found';
+      col.appendChild(div);
+    }
+  }
+}
+
+// ── POSE ACTIONS ───────────────────────────────────────────────
+function addPose() {
+  const cls = getClass(); if (!cls) return;
+  cls.poses.push({ name:'', duration:'', side:'both', notes:'', transition:'', sanskrit:'' }); save();
+  document.getElementById('pose-list').innerHTML = renderPoses(cls.poses);
+  document.querySelectorAll('.pose-name-input').forEach((el,i,a)=>{ if(i===a.length-1) el.focus(); });
+}
+function removePose(i) {
+  const cls = getClass(); if (!cls) return;
+  cls.poses.splice(i,1); save();
+  document.getElementById('pose-list').innerHTML = renderPoses(cls.poses);
+}
+function movePose(i, dir) {
+  const cls = getClass(); if (!cls) return;
+  const j=i+dir; if(j<0||j>=cls.poses.length) return;
+  [cls.poses[i],cls.poses[j]]=[cls.poses[j],cls.poses[i]]; save();
+  document.getElementById('pose-list').innerHTML = renderPoses(cls.poses);
+}
+
+// ── PROPS ──────────────────────────────────────────────────────
+function toggleProp(name, el) {
+  const cls = getClass(); if (!cls) return;
+  cls.props = cls.props||[];
+  if (cls.props.includes(name)) { cls.props=cls.props.filter(p=>p!==name); el.classList.remove('selected'); }
+  else { cls.props.push(name); el.classList.add('selected'); }
+  save();
+}
+function addCustomProp() {
+  const cls = getClass(); if (!cls) return;
+  const inp = document.getElementById('custom-prop-inp');
+  const val = inp.value.trim(); if(!val||cls.props.includes(val)) return;
+  cls.props.push(val); inp.value=''; save();
+  const row = document.getElementById('custom-props-row');
+  const div = document.createElement('div'); div.className='prop-chip selected';
+  div.innerHTML=`${val} <button onclick="removeCustomProp('${val}')" style="background:none;border:none;cursor:pointer;color:var(--clay);margin-left:2px;">×</button>`;
+  row.appendChild(div);
+}
+function removeCustomProp(name) {
+  const cls = getClass(); if (!cls) return;
+  cls.props=cls.props.filter(p=>p!==name); save();
+  document.getElementById('custom-props-row').innerHTML=(cls.props||[]).filter(p=>!PRESET_PROPS.includes(p)).map(p=>`
+    <div class="prop-chip selected">${p} <button onclick="removeCustomProp('${p}')" style="background:none;border:none;cursor:pointer;color:var(--clay);margin-left:2px;">×</button></div>`).join('');
+}
+
+// ── DELETE ─────────────────────────────────────────────────────
+function deleteClass(id) { deleteTargetId=id; openModal('delete-modal'); }
+function confirmDelete() {
+  classes=classes.filter(c=>c.id!==deleteTargetId); save(); closeModal('delete-modal');
+  currentClassId=null; renderSidebar('');
+  document.getElementById('main-area').innerHTML=`<div class="welcome"><div class="welcome-icon">🌿</div><h2>Class deleted</h2><p>Select a class or create a new one.</p><button class="btn btn-primary" style="padding:12px 28px;" onclick="newClass()">New Class</button></div>`;
+}
+
+// ── SAVE ───────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('yogaClasses', JSON.stringify(classes));
+  const s=document.getElementById('save-status'); if(s) s.textContent='Saved · '+new Date().toLocaleTimeString();
+}
+function exportJSON() {
+  const cls=getClass(); if(!cls) return;
+  const b=new Blob([JSON.stringify(cls,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b), a=document.createElement('a');
+  a.href=u; a.download=(cls.name||'yoga-class').replace(/\s+/g,'-').toLowerCase()+'.json';
+  a.click(); URL.revokeObjectURL(u);
+}
+
+// ── GOOGLE DRIVE ───────────────────────────────────────────────
+function connectDrive() { openModal('drive-modal'); }
+function showDriveInput() {
+  const saved=localStorage.getItem('driveClientId')||'';
+  document.getElementById('drive-modal-content').innerHTML=`
+    <div style="background:#edf3ee;border-radius:6px;padding:11px 13px;margin-bottom:14px;font-size:13px;color:#2d5a30;line-height:1.6;">
+      🔒 Stored only on this device — sent directly to Google.
+    </div>
+    <label style="font-size:11px;font-weight:600;color:#5a4f48;letter-spacing:0.05em;display:block;margin-bottom:6px;">GOOGLE OAUTH CLIENT ID</label>
+    <input class="field" id="client-id-input" placeholder="Paste your Client ID…" value="${saved}" style="margin-bottom:14px;">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('drive-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="initDrive()">Connect</button>
+    </div>`;
+}
+function initDrive() {
+  const id=document.getElementById('client-id-input').value.trim();
+  if(!id) return alert('Please enter a Client ID.');
+  localStorage.setItem('driveClientId',id); closeModal('drive-modal'); loadGapi(id);
+}
+function loadGapi(clientId) {
+  const s1=document.createElement('script'); s1.src='https://apis.google.com/js/api.js';
+  s1.onload=()=>gapi.load('client',async()=>{
+    await gapi.client.init({discoveryDocs:['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']});
+    gapiInited=true;
+  });
+  document.head.appendChild(s1);
+  const s2=document.createElement('script'); s2.src='https://accounts.google.com/gsi/client';
+  s2.onload=()=>{
+    tokenClient=google.accounts.oauth2.initTokenClient({ client_id:clientId, scope:SCOPES,
+      callback:async(resp)=>{ if(resp.error){console.error(resp);return;} driveConnected=true; setDriveReady(); await syncToDrive(); }
+    });
+    gisInited=true;
+  };
+  document.head.appendChild(s2);
+}
+function setDriveReady() {
+  const b=document.getElementById('drive-btn'); b.textContent='☁ Drive ✓'; b.style.color='#b5cdb7';
+}
+async function saveToDrive() {
+  const id=localStorage.getItem('driveClientId'); if(!id){connectDrive();return;}
+  if(!tokenClient){loadGapi(id);setTimeout(()=>tokenClient&&tokenClient.requestAccessToken({prompt:''}),2500);return;}
+  tokenClient.requestAccessToken({prompt:''});
+}
+async function syncToDrive() {
+  const blob=new Blob([JSON.stringify(classes,null,2)],{type:'application/json'});
+  const search=await gapi.client.drive.files.list({q:`name='${DRIVE_FILE}' and trashed=false`,fields:'files(id)'});
+  const files=search.result.files;
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify({name:DRIVE_FILE,mimeType:'application/json'})],{type:'application/json'}));
+  form.append('file',blob);
+  const has=files&&files.length;
+  const resp=await fetch(has?`https://www.googleapis.com/upload/drive/v3/files/${files[0].id}?uploadType=multipart`:`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`,
+    {method:has?'PATCH':'POST',headers:{Authorization:'Bearer '+gapi.client.getToken().access_token},body:form});
+  if(resp.ok){ const s=document.getElementById('save-status'); if(s) s.textContent='☁ Saved to Drive · '+new Date().toLocaleTimeString(); }
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+renderSidebar();
+const savedCID=localStorage.getItem('driveClientId');
+if(savedCID){loadGapi(savedCID);setTimeout(setDriveReady,2000);}
+</script>
+</body>
+</html>
