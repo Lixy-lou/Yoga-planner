@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prana Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #7a9e7e; --sage-light: #b5cdb7; --sage-dark: #4a6b4e;
+    --cream: #f7f3ee; --warm: #e8ddd0; --clay: #c4956a; --clay-light: #e8c9a8;
+    --ink: #2a2420; --ink-soft: #5a4f48; --white: #fdfaf7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; font-size: 15px; }
+
+  header { background: var(--ink); color: var(--cream); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(42,36,32,0.3); }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 300; letter-spacing: 0.04em; }
+  .logo span { color: var(--sage-light); font-style: italic; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+
+  .btn { padding: 7px 14px; border-radius: 4px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.03em; transition: all 0.2s; white-space: nowrap; }
+  .btn-primary { background: var(--sage); color: white; }
+  .btn-primary:hover { background: var(--sage-dark); }
+  .btn-secondary { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.3); }
+  .btn-secondary:hover { border-color: var(--sage-light); color: var(--sage-light); }
+  .btn-clay { background: var(--clay); color: white; }
+  .btn-clay:hover { background: #b07d52; }
+  .btn-ghost { background: transparent; color: var(--ink-soft); border: 1px solid var(--warm); }
+  .btn-ghost:hover { border-color: var(--sage); color: var(--sage-dark); }
+  .btn-danger { background: transparent; color: #c0392b; border: 1px solid #e8c0bc; font-size: 11px; padding: 5px 12px; }
+  .btn-danger:hover { background: #fdf0ef; }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+  .app { display: flex; min-height: calc(100vh - 58px); }
+
+  /* SIDEBAR */
+  .sidebar { width: 260px; min-width: 260px; background: var(--white); border-right: 1px solid var(--warm); display: flex; flex-direction: column; }
+  .sidebar-header { padding: 16px 16px 10px; border-bottom: 1px solid var(--warm); display: flex; justify-content: space-between; align-items: center; }
+  .sidebar-title { font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.07em; text-transform: uppercase; }
+  .search-box { padding: 9px 14px; border-bottom: 1px solid var(--warm); }
+  .search-box input { width: 100%; padding: 6px 10px; border: 1px solid var(--warm); border-radius: 4px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); outline: none; }
+  .search-box input:focus { border-color: var(--sage); }
+  .search-box input::placeholder { color: #bbb; }
+  .class-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+  .class-item { padding: 10px 16px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; }
+  .class-item:hover { background: var(--cream); border-left-color: var(--sage-light); }
+  .class-item.active { background: #edf3ee; border-left-color: var(--sage); }
+  .class-item-name { font-weight: 500; font-size: 13px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .class-item-meta { font-size: 11px; color: var(--ink-soft); display: flex; gap: 7px; align-items: center; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 20px; font-size: 10px; font-weight: 500; }
+  .badge-Beginner { background: #e8f4e8; color: #4a7a4a; }
+  .badge-Intermediate { background: #fef3e2; color: #9a6a20; }
+  .badge-Advanced { background: #fde8e8; color: #9a3030; }
+  .badge-AllLevels { background: #ece8f4; color: #5a4a7a; }
+  .empty-sidebar { padding: 30px 16px; text-align: center; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }
+
+  .main { flex: 1; overflow-y: auto; }
+  .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; padding: 40px; }
+  .welcome-icon { font-size: 3rem; margin-bottom: 18px; opacity: 0.6; }
+  .welcome h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; margin-bottom: 10px; }
+  .welcome p { color: var(--ink-soft); max-width: 400px; line-height: 1.7; margin-bottom: 22px; }
+
+  .class-view { padding: 28px 32px; max-width: 780px; }
+  .class-header { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--warm); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .class-header-left { flex: 1; }
+  .class-title-input { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; border: none; background: transparent; color: var(--ink); width: 100%; outline: none; margin-bottom: 10px; }
+  .class-title-input::placeholder { color: #ccc; }
+  .meta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .meta-field { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); }
+  .meta-field label { font-weight: 500; white-space: nowrap; }
+  .meta-field input, .meta-field select { border: 1px solid var(--warm); border-radius: 4px; padding: 3px 8px; font-family: 'DM Sans', sans-serif; font-size: 12px; background: var(--cream); color: var(--ink); outline: none; }
+  .meta-field input:focus, .meta-field select:focus { border-color: var(--sage); }
+
+  .section { margin-bottom: 22px; }
+  .section-title { font-size: 0.7rem; font-weight: 600; color: var(--sage-dark); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 9px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--warm); }
+
+  textarea.field { width: 100%; padding: 9px 12px; border: 1px solid var(--warm); border-radius: 6px; background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); resize: vertical; min-height: 65px; outline: none; line-height: 1.6; }
+  textarea.field:focus { border-color: var(--sage); }
+  input.field { width: 100%; padding: 8px 12px; border: 1px solid var(--warm); border-radius: 6px; background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); outline: none; }
+  input.field:focus { border-color: var(--sage); }
+
+  .spotify-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #1db954; color: white; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: 500; margin-top: 8px; transition: background 0.2s; }
+  .spotify-link:hover { background: #17a349; }
+
+  /* PROPS */
+  .props-palette { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+  .prop-chip { padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1.5px solid var(--warm); background: var(--cream); color: var(--ink-soft); transition: all 0.15s; user-select: none; }
+  .prop-chip:hover { border-color: var(--clay); color: var(--clay); }
+  .prop-chip.selected { background: var(--clay-light); border-color: var(--clay); color: var(--ink); font-weight: 500; }
+  .props-custom { display: flex; gap: 7px; margin-top: 5px; }
+  .props-custom input { flex: 1; padding: 5px 10px; border: 1px solid var(--warm); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 12px; background: var(--white); outline: none; }
+  .props-custom input:focus { border-color: var(--sage); }
+  .custom-props-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+
+  /* ── GROUPS ── */
+  .groups-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+
+  .group-block {
+    border: 1px solid var(--warm); border-radius: 10px; overflow: hidden; background: var(--white);
+  }
+
+  .group-header {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: var(--cream); border-bottom: 1px solid var(--warm);
+  }
+
+  .group-name-input {
+    flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; color: var(--ink); outline: none;
+    letter-spacing: 0.02em;
+  }
+  .group-name-input::placeholder { color: #bbb; font-weight: 400; }
+
+  .group-meta { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .group-meta label { font-size: 11px; color: var(--ink-soft); font-weight: 500; }
+  .group-meta select, .group-meta input[type=number] {
+    border: 1px solid var(--warm); border-radius: 4px; padding: 3px 7px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; background: var(--white);
+    color: var(--ink); outline: none;
+  }
+  .group-meta select:focus, .group-meta input[type=number]:focus { border-color: var(--sage); }
+
+  .group-rounds-badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px;
+    background: #edf3ee; border: 1px solid var(--sage-light); border-radius: 20px;
+    font-size: 11px; color: var(--sage-dark); font-weight: 500; white-space: nowrap;
+  }
+
+  .group-delete-btn {
+    background: none; border: none; cursor: pointer; color: #ccc; font-size: 16px;
+    padding: 2px 4px; border-radius: 3px; transition: all 0.15s; flex-shrink: 0;
+  }
+  .group-delete-btn:hover { color: #c0392b; background: #fde8e8; }
+
+  /* POSE ROWS inside group */
+  .pose-rows { padding: 6px 0; }
+
+  .pose-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 14px; border-bottom: 1px solid #f5f0ea; transition: background 0.1s;
+  }
+  .pose-row:last-child { border-bottom: none; }
+  .pose-row:hover { background: var(--cream); }
+
+  .pose-row-num {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--sage);
+    color: white; font-size: 10px; font-weight: 600; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+
+  .pose-row-name {
+    flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--ink); outline: none; padding: 3px 0;
+  }
+  .pose-row-name::placeholder { color: #ccc; }
+  .pose-row-name::-webkit-calendar-picker-indicator { display: none !important; }
+
+  .pose-row-sanskrit {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 12px; color: var(--sage-dark); white-space: nowrap; flex-shrink: 0;
+  }
+
+  .pose-row-expand {
+    background: none; border: none; cursor: pointer; color: #ccc; font-size: 13px;
+    padding: 2px 4px; border-radius: 3px; transition: all 0.15s; flex-shrink: 0;
+  }
+  .pose-row-expand:hover { color: var(--ink-soft); background: var(--warm); }
+  .pose-row-delete {
+    background: none; border: none; cursor: pointer; color: #ccc; font-size: 13px;
+    padding: 2px 4px; border-radius: 3px; transition: all 0.15s; flex-shrink: 0;
+  }
+  .pose-row-delete:hover { color: #c0392b; background: #fde8e8; }
+
+  /* POSE DETAILS (expanded) */
+  .pose-details-bar {
+    display: none; padding: 8px 14px 10px 42px;
+    background: #faf7f4; border-top: 1px solid #f0ebe3;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .pose-details-bar.open { display: flex; }
+  .pose-detail-field { display: flex; flex-direction: column; gap: 3px; min-width: 120px; }
+  .pose-detail-field label { font-size: 10px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; }
+  .pose-detail-field input, .pose-detail-field select {
+    padding: 4px 8px; border: 1px solid var(--warm); border-radius: 4px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; background: var(--white); color: var(--ink); outline: none;
+  }
+  .pose-detail-field input:focus, .pose-detail-field select:focus { border-color: var(--sage); }
+  .pose-detail-field textarea {
+    padding: 4px 8px; border: 1px solid var(--warm); border-radius: 4px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; background: var(--white);
+    color: var(--ink); outline: none; resize: none; min-width: 200px;
+  }
+
+  /* QUICK ADD ROW */
+  .quick-add-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 14px; border-top: 1px solid var(--warm); background: var(--cream);
+  }
+  .quick-add-input {
+    flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; color: var(--ink); outline: none; padding: 3px 0;
+  }
+  .quick-add-input::placeholder { color: #bbb; }
+  .quick-add-input::-webkit-calendar-picker-indicator { display: none !important; }
+  .quick-add-hint { font-size: 11px; color: #bbb; flex-shrink: 0; }
+
+  /* ADD GROUP BTN */
+  .add-group-btn {
+    width: 100%; padding: 12px; border: 2px dashed var(--warm); border-radius: 8px;
+    background: transparent; color: var(--ink-soft); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; cursor: pointer; transition: all 0.2s; margin-top: 4px;
+  }
+  .add-group-btn:hover { border-color: var(--sage); color: var(--sage-dark); background: #f0f5f0; }
+
+  /* SAVE BAR */
+  .save-bar { position: sticky; bottom: 0; background: var(--white); border-top: 1px solid var(--warm); padding: 11px 32px; display: flex; gap: 9px; align-items: center; }
+  .save-status { font-size: 11px; color: var(--ink-soft); margin-right: auto; font-style: italic; }
+  .date-label { font-size: 10px; color: #bbb; margin-top: 2px; }
+
+  /* MODALS */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(42,36,32,0.5); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--white); border-radius: 10px; padding: 28px; max-width: 460px; width: 90%; box-shadow: 0 20px 60px rgba(42,36,32,0.3); }
+  .modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; margin-bottom: 7px; }
+  .modal p { color: var(--ink-soft); font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 9px; justify-content: flex-end; }
+
+  /* AUTOCOMPLETE */
+  .autocomplete-wrap { position: relative; flex: 1; }
+  .autocomplete-list {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 300;
+    background: var(--white); border: 1px solid var(--warm); border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(42,36,32,0.15); max-height: 180px; overflow-y: auto;
+    display: none;
+  }
+  .autocomplete-list.show { display: block; }
+  .autocomplete-item {
+    padding: 8px 12px; cursor: pointer; font-size: 13px; color: var(--ink);
+    border-bottom: 1px solid #f5f0ea; transition: background 0.1s;
+  }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover, .autocomplete-item.active { background: #edf3ee; color: var(--sage-dark); }
+  .autocomplete-item small { color: var(--sage); font-family: 'Cormorant Garamond', serif; font-style: italic; margin-left: 6px; }
+
+  @media (max-width: 680px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: unset; display: flex; max-height: 320px; }
+    .class-list { max-height: 260px; overflow-y: auto; }
+    .class-view { padding: 16px; }
+    header { padding: 12px 16px; }
+    .save-bar { padding: 10px 16px; }
+    .group-meta { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">prana <span>flow</span></div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="loadFromDrive()" id="load-btn">☁ Load</button>
+    <button class="btn btn-secondary" id="drive-btn" onclick="connectDrive()">☁ Google Drive</button>
+    <button class="btn btn-primary" onclick="newClass()">+ New Class</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">My Classes</span>
+      <span id="class-count" style="font-size:11px;color:#bbb;">0 saved</span>
+    </div>
+    <div class="search-box">
+      <input type="text" placeholder="Search classes…" oninput="filterClasses(this.value)" id="search-input">
+    </div>
+    <div class="class-list" id="class-list">
+      <div class="empty-sidebar"><div style="font-size:2rem;margin-bottom:8px;">🌿</div>No classes yet.<br>Create your first sequence.</div>
+    </div>
+  </aside>
+
+  <main class="main" id="main-area">
+    <div class="welcome">
+      <div class="welcome-icon">🧘</div>
+      <h2>Your Yoga Class Planner</h2>
+      <p>Build sequences in groups, attach playlists, and sync across devices.</p>
+      <button class="btn btn-primary" style="padding:11px 26px;font-size:13px;" onclick="newClass()">Create First Class</button>
+    </div>
+  </main>
+</div>
+
+<!-- Delete class modal -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <h3>Delete this class?</h3>
+    <p>This will permanently remove the class and all its groups and poses.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('delete-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drive modal -->
+<div class="modal-overlay" id="drive-modal">
+  <div class="modal">
+    <h3>Connect Google Drive</h3>
+    <p>Your classes sync to a single file in your Drive, accessible from any device.</p>
+    <div id="drive-modal-content">
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('drive-modal')">Not now</button>
+        <button class="btn btn-primary" onclick="showDriveInput()">Connect Drive</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SANSKRIT LOOKUP ────────────────────────────────────────────
+const SANSKRIT = {
+  "mountain pose":"Tadasana","tadasana":"Tadasana","mountain":"Tadasana",
+  "warrior i":"Virabhadrasana I","warrior 1":"Virabhadrasana I",
+  "warrior ii":"Virabhadrasana II","warrior 2":"Virabhadrasana II",
+  "warrior iii":"Virabhadrasana III","warrior 3":"Virabhadrasana III",
+  "warrior":"Virabhadrasana",
+  "triangle pose":"Trikonasana","extended triangle":"Utthita Trikonasana","trikonasana":"Trikonasana",
+  "tree pose":"Vrksasana","vrksasana":"Vrksasana",
+  "chair pose":"Utkatasana","utkatasana":"Utkatasana","fierce pose":"Utkatasana",
+  "standing forward fold":"Uttanasana","forward fold":"Uttanasana","uttanasana":"Uttanasana",
+  "half standing forward fold":"Ardha Uttanasana","halfway lift":"Ardha Uttanasana","ardha uttanasana":"Ardha Uttanasana",
+  "crescent lunge":"Anjaneyasana","low lunge":"Anjaneyasana","anjaneyasana":"Anjaneyasana",
+  "high lunge":"Utthita Ashwa Sanchalanasana",
+  "extended side angle":"Utthita Parsvakonasana","side angle":"Parsvakonasana","parsvakonasana":"Parsvakonasana",
+  "pyramid pose":"Parsvottanasana","parsvottanasana":"Parsvottanasana",
+  "revolved triangle":"Parivrtta Trikonasana","revolved side angle":"Parivrtta Parsvakonasana",
+  "eagle pose":"Garudasana","garudasana":"Garudasana",
+  "half moon":"Ardha Chandrasana","ardha chandrasana":"Ardha Chandrasana",
+  "goddess pose":"Utkata Konasana","utkata konasana":"Utkata Konasana",
+  "wide legged forward fold":"Prasarita Padottanasana","prasarita padottanasana":"Prasarita Padottanasana",
+  "garland pose":"Malasana","malasana":"Malasana","squat":"Malasana",
+  "dancer pose":"Natarajasana","natarajasana":"Natarajasana","lord of the dance":"Natarajasana",
+  "staff pose":"Dandasana","dandasana":"Dandasana",
+  "seated forward fold":"Paschimottanasana","paschimottanasana":"Paschimottanasana",
+  "bound angle":"Baddha Konasana","butterfly pose":"Baddha Konasana","baddha konasana":"Baddha Konasana",
+  "wide angle seated forward fold":"Upavistha Konasana","upavistha konasana":"Upavistha Konasana",
+  "half lord of the fishes":"Ardha Matsyendrasana","seated spinal twist":"Ardha Matsyendrasana","ardha matsyendrasana":"Ardha Matsyendrasana",
+  "hero pose":"Virasana","virasana":"Virasana",
+  "lotus pose":"Padmasana","padmasana":"Padmasana","half lotus":"Ardha Padmasana",
+  "easy pose":"Sukhasana","sukhasana":"Sukhasana",
+  "fire log pose":"Agnistambhasana","agnistambhasana":"Agnistambhasana","double pigeon":"Agnistambhasana",
+  "cow face pose":"Gomukhasana","gomukhasana":"Gomukhasana",
+  "head to knee pose":"Janu Sirsasana","janu sirsasana":"Janu Sirsasana",
+  "boat pose":"Navasana","navasana":"Navasana","half boat":"Ardha Navasana",
+  "corpse pose":"Savasana","savasana":"Savasana","shavasana":"Savasana","relaxation pose":"Savasana",
+  "happy baby":"Ananda Balasana","ananda balasana":"Ananda Balasana","happy baby pose":"Ananda Balasana",
+  "knees to chest":"Apanasana","apanasana":"Apanasana",
+  "supine twist":"Supta Matsyendrasana","reclined twist":"Supta Matsyendrasana","supta matsyendrasana":"Supta Matsyendrasana",
+  "bridge pose":"Setu Bandha Sarvangasana","setu bandha":"Setu Bandha Sarvangasana","setu bandha sarvangasana":"Setu Bandha Sarvangasana",
+  "wheel pose":"Urdhva Dhanurasana","upward bow":"Urdhva Dhanurasana","urdhva dhanurasana":"Urdhva Dhanurasana",
+  "fish pose":"Matsyasana","matsyasana":"Matsyasana",
+  "legs up the wall":"Viparita Karani","viparita karani":"Viparita Karani",
+  "shoulder stand":"Sarvangasana","sarvangasana":"Sarvangasana",
+  "plow pose":"Halasana","halasana":"Halasana",
+  "reclining hero":"Supta Virasana","supta virasana":"Supta Virasana",
+  "reclined bound angle":"Supta Baddha Konasana","supta baddha konasana":"Supta Baddha Konasana",
+  "cobra pose":"Bhujangasana","bhujangasana":"Bhujangasana",
+  "upward facing dog":"Urdhva Mukha Svanasana","up dog":"Urdhva Mukha Svanasana","urdhva mukha svanasana":"Urdhva Mukha Svanasana",
+  "locust pose":"Salabhasana","salabhasana":"Salabhasana",
+  "bow pose":"Dhanurasana","dhanurasana":"Dhanurasana",
+  "sphinx pose":"Salamba Bhujangasana","salamba bhujangasana":"Salamba Bhujangasana","baby cobra":"Ardha Bhujangasana",
+  "frog pose":"Mandukasana","mandukasana":"Mandukasana","half frog":"Ardha Bhekasana",
+  "downward facing dog":"Adho Mukha Svanasana","downward dog":"Adho Mukha Svanasana","down dog":"Adho Mukha Svanasana","adho mukha svanasana":"Adho Mukha Svanasana",
+  "cat pose":"Marjaryasana","marjaryasana":"Marjaryasana",
+  "cow pose":"Bitilasana","bitilasana":"Bitilasana",
+  "cat cow":"Marjaryasana-Bitilasana","cat-cow":"Marjaryasana-Bitilasana",
+  "thread the needle":"Parsva Balasana","parsva balasana":"Parsva Balasana",
+  "child's pose":"Balasana","childs pose":"Balasana","balasana":"Balasana","extended child's pose":"Utthita Balasana",
+  "puppy pose":"Uttana Shishosana","uttana shishosana":"Uttana Shishosana",
+  "table top":"Bharmanasana","tabletop":"Bharmanasana","bharmanasana":"Bharmanasana",
+  "plank pose":"Phalakasana","phalakasana":"Phalakasana","plank":"Phalakasana",
+  "low plank":"Chaturanga Dandasana","chaturanga":"Chaturanga Dandasana","chaturanga dandasana":"Chaturanga Dandasana","four limbed staff":"Chaturanga Dandasana",
+  "side plank":"Vasisthasana","vasisthasana":"Vasisthasana",
+  "pigeon pose":"Eka Pada Rajakapotasana","eka pada rajakapotasana":"Eka Pada Rajakapotasana",
+  "sleeping pigeon":"Supta Kapotasana","reclined pigeon":"Supta Kapotasana",
+  "eye of needle":"Sucirandhrasana","figure four":"Sucirandhrasana",
+  "lizard pose":"Utthan Pristhasana","utthan pristhasana":"Utthan Pristhasana",
+  "monkey pose":"Hanumanasana","hanumanasana":"Hanumanasana","splits":"Hanumanasana",
+  "crow pose":"Bakasana","bakasana":"Bakasana","crane pose":"Bakasana",
+  "headstand":"Sirsasana","sirsasana":"Sirsasana",
+  "forearm stand":"Pincha Mayurasana","pincha mayurasana":"Pincha Mayurasana",
+  "handstand":"Adho Mukha Vrksasana","adho mukha vrksasana":"Adho Mukha Vrksasana",
+  "revolved chair":"Parivrtta Utkatasana","parivrtta utkatasana":"Parivrtta Utkatasana","twisted chair":"Parivrtta Utkatasana",
+  "revolved lunge":"Parivrtta Anjaneyasana","parivrtta anjaneyasana":"Parivrtta Anjaneyasana",
+  "alternate nostril breathing":"Nadi Shodhana","nadi shodhana":"Nadi Shodhana",
+  "ujjayi breath":"Ujjayi Pranayama","ujjayi":"Ujjayi Pranayama",
+  "kapalabhati":"Kapalabhati Pranayama","breath of fire":"Kapalabhati Pranayama",
+};
+
+function lookupSanskrit(name) {
+  if (!name) return '';
+  const key = name.trim().toLowerCase().replace(/[''']/g,"'").replace(/\s+/g,' ');
+  if (SANSKRIT[key]) return SANSKRIT[key];
+  for (const k of Object.keys(SANSKRIT)) { if (key.includes(k)||k.includes(key)) return SANSKRIT[k]; }
+  return '';
+}
+
+// Pose name suggestions list
+const POSE_NAMES = [...new Set(Object.values(SANSKRIT))];
+
+// ── STATE ──────────────────────────────────────────────────────
+let classes = JSON.parse(localStorage.getItem('yogaClasses') || '[]');
+let currentClassId = null;
+let deleteTargetId = null;
+let driveConnected = false, gapiInited = false, gisInited = false, tokenClient = null;
+let pendingDriveAction = null;
+const DRIVE_FILE = 'yoga-planner-data.json';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const EMBEDDED_CLIENT_ID = '92105548723-60tappk2ndsdigtig3469dcuv4fd99dc.apps.googleusercontent.com';
+const PRESET_PROPS = ['Block','Strap','Bolster','Blanket','Wall','Chair','Eye Pillow'];
+const SIDES = ['—','Right','Left','Both','Right then Left'];
+
+// ── MODAL HELPERS ──────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ── SIDEBAR ────────────────────────────────────────────────────
+function renderSidebar(filter='') {
+  const list = document.getElementById('class-list');
+  document.getElementById('class-count').textContent = classes.length + ' saved';
+  const filtered = filter ? classes.filter(c=>(c.name||'').toLowerCase().includes(filter.toLowerCase())) : classes;
+  if (!filtered.length) {
+    list.innerHTML=`<div class="empty-sidebar">${filter?'🔍 No matches.':'🌿 No classes yet.<br>Create your first sequence.'}</div>`;
+    return;
+  }
+  const totalPoses = cls => (cls.groups||[]).reduce((s,g)=>s+(g.poses||[]).length,0);
+  list.innerHTML=[...filtered].sort((a,b)=>b.createdAt-a.createdAt).map(c=>`
+    <div class="class-item ${c.id===currentClassId?'active':''}" onclick="openClass('${c.id}')">
+      <div class="class-item-name">${esc(c.name||'Untitled Class')}</div>
+      <div class="class-item-meta">
+        <span>${c.duration?c.duration+' min':'--'}</span>
+        <span class="badge badge-${(c.difficulty||'AllLevels').replace(/\s/g,'')}">${c.difficulty||'All Levels'}</span>
+      </div>
+      <div class="date-label">${totalPoses(c)} poses · ${new Date(c.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+    </div>`).join('');
+}
+function filterClasses(v) { renderSidebar(v); }
+
+// ── CLASS CRUD ─────────────────────────────────────────────────
+function newClass() {
+  const cls = { id:'c'+Date.now(), name:'', duration:'', difficulty:'All Levels', intentions:'', spotifyUrl:'', props:[], groups:[], createdAt:Date.now() };
+  classes.push(cls); save();
+  renderSidebar(document.getElementById('search-input').value);
+  openClass(cls.id);
+}
+function openClass(id) {
+  currentClassId=id;
+  const cls=classes.find(c=>c.id===id); if(!cls) return;
+  renderSidebar(document.getElementById('search-input').value);
+  renderClassView(cls);
+}
+function getClass() { return classes.find(c=>c.id===currentClassId); }
+
+// ── RENDER CLASS ───────────────────────────────────────────────
+function renderClassView(cls) {
+  const selProps=new Set(cls.props||[]);
+  document.getElementById('main-area').innerHTML=`
+    <div class="class-view">
+      <div class="class-header">
+        <div class="class-header-left">
+          <input class="class-title-input" placeholder="Class name or theme…" value="${esc(cls.name||'')}" oninput="updateField('name',this.value)">
+          <div class="meta-row">
+            <div class="meta-field"><label>Duration</label><input type="number" min="1" max="240" value="${cls.duration||''}" placeholder="60" style="width:58px;" oninput="updateField('duration',this.value)"> min</div>
+            <div class="meta-field"><label>Level</label>
+              <select onchange="updateField('difficulty',this.value)">
+                ${['All Levels','Beginner','Intermediate','Advanced'].map(l=>`<option value="${l}" ${cls.difficulty===l?'selected':''}>${l}</option>`).join('')}
+              </select>
+            </div>
+            <div class="meta-field" style="color:#bbb;font-size:11px;">Created ${new Date(cls.createdAt).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="deleteClass('${cls.id}')">✕ Delete</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Intentions & Notes</div>
+        <textarea class="field" placeholder="Set the intention for this class…" rows="2" oninput="updateField('intentions',this.value)">${esc(cls.intentions||'')}</textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Spotify Playlist</div>
+        <input class="field" id="spotify-inp" type="url" placeholder="Paste Spotify playlist link…" value="${esc(cls.spotifyUrl||'')}" oninput="updateField('spotifyUrl',this.value)">
+        ${cls.spotifyUrl?`<a href="${cls.spotifyUrl}" target="_blank" class="spotify-link">▶ Open in Spotify</a>`:''}
+      </div>
+
+      <div class="section">
+        <div class="section-title">Props Needed</div>
+        <div class="props-palette">
+          ${PRESET_PROPS.map(p=>`<div class="prop-chip ${selProps.has(p)?'selected':''}" onclick="toggleProp('${p}',this)">${p}</div>`).join('')}
+        </div>
+        <div class="props-custom">
+          <input type="text" id="custom-prop-inp" placeholder="Custom prop…" onkeydown="if(event.key==='Enter')addCustomProp()">
+          <button class="btn btn-ghost btn-sm" onclick="addCustomProp()">Add</button>
+        </div>
+        <div class="custom-props-row" id="custom-props-row">
+          ${(cls.props||[]).filter(p=>!PRESET_PROPS.includes(p)).map(p=>`
+            <div class="prop-chip selected">${p} <button onclick="removeCustomProp('${p}')" style="background:none;border:none;cursor:pointer;color:var(--clay);margin-left:2px;">×</button></div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Sequence</div>
+        <div class="groups-list" id="groups-list">
+          ${(cls.groups||[]).map((g,gi)=>renderGroup(g,gi)).join('')}
+        </div>
+        <button class="add-group-btn" onclick="addGroup()">+ Add Group</button>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <span class="save-status" id="save-status">All changes saved</span>
+      <button class="btn btn-ghost" onclick="exportJSON()">⬇ Export</button>
+      <button class="btn btn-clay" onclick="saveToDrive()">☁ Sync All Classes</button>
+    </div>
+  `;
+}
+
+// ── RENDER GROUP ───────────────────────────────────────────────
+function renderGroup(g, gi) {
+  const roundsLabel = g.rounds > 1
+    ? `<span class="group-rounds-badge">🔄 ${g.rounds}× ${g.side||''}</span>`
+    : '';
+  return `
+    <div class="group-block" id="group-${gi}">
+      <div class="group-header">
+        <input class="group-name-input" placeholder="Group name (e.g. Warm Up, Flow, Cool Down)…"
+          value="${esc(g.name||'')}" oninput="updateGroup(${gi},'name',this.value)">
+        <div class="group-meta">
+          <label>Rounds</label>
+          <input type="number" min="1" max="20" value="${g.rounds||1}" style="width:46px;"
+            oninput="updateGroup(${gi},'rounds',parseInt(this.value)||1)">
+          <label>Side</label>
+          <select onchange="updateGroup(${gi},'side',this.value)">
+            ${SIDES.map(s=>`<option value="${s}" ${g.side===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <button class="group-delete-btn" onclick="deleteGroup(${gi})">✕</button>
+      </div>
+      <div class="pose-rows" id="pose-rows-${gi}">
+        ${(g.poses||[]).map((p,pi)=>renderPoseRow(p,gi,pi,g.poses.length)).join('')}
+      </div>
+      <div class="quick-add-row">
+        <span style="color:#ccc;font-size:13px;">+</span>
+        <div class="autocomplete-wrap">
+          <input class="quick-add-input"
+            placeholder="Pose name, hit Enter…"
+            onkeydown="handleQuickAdd(event,${gi})"
+            oninput="showSuggestions(this,${gi})"
+            onblur="hideSuggestions(this)"
+            onfocus="showSuggestions(this,${gi})"
+            id="quick-add-${gi}"
+            autocomplete="off">
+          <div class="autocomplete-list" id="suggestions-${gi}"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="quickAddByButton(${gi})">Add</button>
+      </div>
+    </div>
+  `;
+}
+
+// ── RENDER POSE ROW ────────────────────────────────────────────
+function renderPoseRow(p, gi, pi, total) {
+  const sanskrit = p.sanskrit || lookupSanskrit(p.name);
+  const hasDetails = p.duration || (p.side && p.side !== '—') || p.notes;
+  return `
+    <div id="pose-row-${gi}-${pi}">
+      <div class="pose-row" onclick="togglePoseDetails(${gi},${pi})" style="cursor:pointer;">
+        <div class="pose-row-num">${pi+1}</div>
+        <input class="pose-row-name" placeholder="Pose name…"
+          value="${esc(p.name||'')}"
+          oninput="updatePoseName(${gi},${pi},this.value)"
+          onclick="event.stopPropagation()">
+        <span class="pose-row-sanskrit" id="sanskrit-${gi}-${pi}">${esc(sanskrit)}</span>
+        ${pi>0?`<button class="pose-row-delete" onclick="event.stopPropagation();movePoseUp(${gi},${pi})" title="Move up">↑</button>`:''}
+        ${pi<total-1?`<button class="pose-row-delete" onclick="event.stopPropagation();movePoseDown(${gi},${pi})" title="Move down">↓</button>`:''}
+        <button class="pose-row-delete" onclick="event.stopPropagation();deletePose(${gi},${pi})" title="Remove">✕</button>
+      </div>
+      <div class="pose-details-bar ${hasDetails?'open':''}" id="pose-details-${gi}-${pi}">
+        <div class="pose-detail-field">
+          <label>Duration / Breaths</label>
+          <input type="text" value="${esc(p.duration||'')}" placeholder="e.g. 5 breaths"
+            oninput="updatePoseField(${gi},${pi},'duration',this.value)">
+        </div>
+        <div class="pose-detail-field">
+          <label>Side</label>
+          <select onchange="updatePoseField(${gi},${pi},'side',this.value)">
+            ${['—','Both','Right','Left','N/A'].map(s=>`<option value="${s}" ${(p.side||'—')===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="pose-detail-field" style="flex:1;">
+          <label>Cues / Notes</label>
+          <textarea rows="2" oninput="updatePoseField(${gi},${pi},'notes',this.value)">${esc(p.notes||'')}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function togglePoseDetails(gi, pi) {
+  const el = document.getElementById(`pose-details-${gi}-${pi}`);
+  if (el) el.classList.toggle('open');
+}
+
+// ── AUTOCOMPLETE ───────────────────────────────────────────────
+const ALL_POSE_NAMES = Object.keys(SANSKRIT)
+  .map(k => ({ english: k.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '), sanskrit: SANSKRIT[k] }))
+  .filter((v,i,a) => a.findIndex(x=>x.sanskrit===v.sanskrit)===i)
+  .sort((a,b)=>a.english.localeCompare(b.english));
+
+// Use event delegation so autocomplete survives re-renders
+document.addEventListener('input', function(e) {
+  if (!e.target.classList.contains('quick-add-input')) return;
+  const inp = e.target;
+  const val = inp.value.trim().toLowerCase();
+  const wrap = inp.closest('.autocomplete-wrap');
+  const list = wrap ? wrap.querySelector('.autocomplete-list') : null;
+  if (!list) return;
+  if (!val) { list.classList.remove('show'); list.innerHTML=''; return; }
+  const matches = ALL_POSE_NAMES.filter(p =>
+    p.english.toLowerCase().includes(val) || p.sanskrit.toLowerCase().includes(val)
+  ).slice(0, 8);
+  if (!matches.length) { list.classList.remove('show'); list.innerHTML=''; return; }
+  // Store gi on the input
+  const gi = inp.id.replace('quick-add-','');
+  list.innerHTML = matches.map(p => `
+    <div class="autocomplete-item" data-name="${p.english.replace(/"/g,'&quot;')}" data-gi="${gi}">
+      ${p.english} <small>${p.sanskrit}</small>
+    </div>`).join('');
+  list.classList.add('show');
+});
+
+document.addEventListener('mousedown', function(e) {
+  if (!e.target.classList.contains('autocomplete-item')) return;
+  e.preventDefault();
+  const name = e.target.dataset.name;
+  const gi = parseInt(e.target.dataset.gi);
+  const inp = document.getElementById(`quick-add-${gi}`);
+  if (inp) inp.value = name;
+  const list = e.target.closest('.autocomplete-list');
+  if (list) { list.classList.remove('show'); list.innerHTML=''; }
+  doQuickAdd(gi);
+});
+
+document.addEventListener('click', function(e) {
+  // Close any open autocomplete when clicking outside
+  if (!e.target.classList.contains('quick-add-input') && !e.target.classList.contains('autocomplete-item')) {
+    document.querySelectorAll('.autocomplete-list').forEach(l => { l.classList.remove('show'); l.innerHTML=''; });
+  }
+});
+
+function showSuggestions(inp, gi) {} // kept for compatibility
+function hideSuggestions(inp) {}     // kept for compatibility
+function selectSuggestion(e, el, gi) {} // kept for compatibility
+
+// ── QUICK ADD ──────────────────────────────────────────────────
+function doQuickAdd(gi) {
+  const inp = document.getElementById(`quick-add-${gi}`);
+  const name = inp.value.trim(); if (!name) return;
+  const cls = getClass(); if (!cls) return;
+  const sanskrit = lookupSanskrit(name);
+  cls.groups[gi].poses.push({ name, sanskrit, duration:'', side:'—', notes:'' });
+  inp.value = '';
+  save();
+  refreshGroup(gi);
+  setTimeout(()=>{ const i=document.getElementById(`quick-add-${gi}`); if(i) i.focus(); }, 50);
+}
+function handleQuickAdd(e, gi) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  doQuickAdd(gi);
+}
+function quickAddByButton(gi) {
+  doQuickAdd(gi);
+}
+
+// ── GROUP ACTIONS ──────────────────────────────────────────────
+function addGroup() {
+  const cls = getClass(); if (!cls) return;
+  cls.groups.push({ id:'g'+Date.now(), name:'', rounds:1, side:'—', poses:[] });
+  save();
+  const list = document.getElementById('groups-list');
+  const gi = cls.groups.length - 1;
+  const div = document.createElement('div');
+  div.innerHTML = renderGroup(cls.groups[gi], gi);
+  list.appendChild(div.firstElementChild);
+  // Focus group name
+  setTimeout(()=>{ const inp=document.getElementById(`group-${gi}`)?.querySelector('.group-name-input'); if(inp) inp.focus(); },50);
+}
+
+function deleteGroup(gi) {
+  const cls = getClass(); if (!cls) return;
+  if (!confirm(`Delete this group and all its poses?`)) return;
+  cls.groups.splice(gi,1); save();
+  document.getElementById('groups-list').innerHTML = (cls.groups||[]).map((g,i)=>renderGroup(g,i)).join('');
+}
+
+function updateGroup(gi, field, value) {
+  const cls = getClass(); if (!cls) return;
+  cls.groups[gi][field] = value; save();
+}
+
+function refreshGroup(gi) {
+  const cls = getClass(); if (!cls) return;
+  const el = document.getElementById(`group-${gi}`);
+  if (!el) return;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = renderGroup(cls.groups[gi], gi);
+  el.replaceWith(tmp.firstElementChild);
+  setTimeout(()=>{ const i=document.getElementById(`quick-add-${gi}`); if(i) i.focus(); },50);
+}
+
+// ── POSE ACTIONS ───────────────────────────────────────────────
+function updatePoseName(gi, pi, value) {
+  const cls = getClass(); if (!cls) return;
+  cls.groups[gi].poses[pi].name = value;
+  const sanskrit = lookupSanskrit(value);
+  cls.groups[gi].poses[pi].sanskrit = sanskrit;
+  save();
+  // Update sanskrit span live without full refresh
+  const span = document.getElementById(`sanskrit-${gi}-${pi}`);
+  if (span) span.textContent = sanskrit;
+}
+
+function updatePoseField(gi, pi, field, value) {
+  const cls = getClass(); if (!cls) return;
+  cls.groups[gi].poses[pi][field] = value; save();
+}
+
+function deletePose(gi, pi) {
+  const cls = getClass(); if (!cls) return;
+  cls.groups[gi].poses.splice(pi,1); save();
+  refreshGroup(gi);
+}
+
+function movePoseUp(gi, pi) {
+  const cls = getClass(); if (!cls||pi===0) return;
+  const poses=cls.groups[gi].poses;
+  [poses[pi-1],poses[pi]]=[poses[pi],poses[pi-1]]; save();
+  refreshGroup(gi);
+}
+
+function movePoseDown(gi, pi) {
+  const cls = getClass(); if (!cls) return;
+  const poses=cls.groups[gi].poses;
+  if(pi>=poses.length-1) return;
+  [poses[pi],poses[pi+1]]=[poses[pi+1],poses[pi]]; save();
+  refreshGroup(gi);
+}
+
+// ── FIELD UPDATES ──────────────────────────────────────────────
+function updateField(field, value) {
+  const cls=getClass(); if(!cls) return;
+  cls[field]=value; save();
+  if(field==='name') renderSidebar(document.getElementById('search-input').value);
+  if(field==='spotifyUrl'&&value.includes('spotify')) {
+    const inp=document.getElementById('spotify-inp');
+    if(inp&&!inp.parentNode.querySelector('.spotify-link')) {
+      const a=document.createElement('a'); a.href=value; a.target='_blank'; a.className='spotify-link'; a.textContent='▶ Open in Spotify';
+      inp.parentNode.appendChild(a);
+    }
+  }
+}
+
+// ── PROPS ──────────────────────────────────────────────────────
+function toggleProp(name,el) {
+  const cls=getClass(); if(!cls) return;
+  cls.props=cls.props||[];
+  if(cls.props.includes(name)){cls.props=cls.props.filter(p=>p!==name);el.classList.remove('selected');}
+  else{cls.props.push(name);el.classList.add('selected');}
+  save();
+}
+function addCustomProp() {
+  const cls=getClass(); if(!cls) return;
+  const inp=document.getElementById('custom-prop-inp');
+  const val=inp.value.trim(); if(!val||cls.props.includes(val)) return;
+  cls.props.push(val); inp.value=''; save();
+  const row=document.getElementById('custom-props-row');
+  const div=document.createElement('div'); div.className='prop-chip selected';
+  div.innerHTML=`${val} <button onclick="removeCustomProp('${val}')" style="background:none;border:none;cursor:pointer;color:var(--clay);margin-left:2px;">×</button>`;
+  row.appendChild(div);
+}
+function removeCustomProp(name) {
+  const cls=getClass(); if(!cls) return;
+  cls.props=cls.props.filter(p=>p!==name); save();
+  document.getElementById('custom-props-row').innerHTML=(cls.props||[]).filter(p=>!PRESET_PROPS.includes(p)).map(p=>`
+    <div class="prop-chip selected">${p} <button onclick="removeCustomProp('${p}')" style="background:none;border:none;cursor:pointer;color:var(--clay);margin-left:2px;">×</button></div>`).join('');
+}
+
+// ── DELETE CLASS ───────────────────────────────────────────────
+function deleteClass(id) { deleteTargetId=id; openModal('delete-modal'); }
+function confirmDelete() {
+  classes=classes.filter(c=>c.id!==deleteTargetId); save(); closeModal('delete-modal');
+  currentClassId=null; renderSidebar('');
+  document.getElementById('main-area').innerHTML=`<div class="welcome"><div class="welcome-icon">🌿</div><h2>Class deleted</h2><p>Select a class or create a new one.</p><button class="btn btn-primary" style="padding:11px 24px;" onclick="newClass()">New Class</button></div>`;
+}
+
+// ── SAVE ───────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('yogaClasses',JSON.stringify(classes));
+  const s=document.getElementById('save-status'); if(s) s.textContent='Saved · '+new Date().toLocaleTimeString();
+}
+function exportJSON() {
+  const cls=getClass(); if(!cls) return;
+  const b=new Blob([JSON.stringify(cls,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u; a.download=(cls.name||'yoga-class').replace(/\s+/g,'-').toLowerCase()+'.json';
+  a.click(); URL.revokeObjectURL(u);
+}
+
+// ── GOOGLE DRIVE ───────────────────────────────────────────────
+function connectDrive() {
+  const id = localStorage.getItem('driveClientId') || EMBEDDED_CLIENT_ID;
+  localStorage.setItem('driveClientId', id);
+  loadGapi(id);
+  closeModal('drive-modal');
+}
+function showDriveInput() { connectDrive(); }
+function loadGapi(clientId) {
+  const s1=document.createElement('script'); s1.src='https://apis.google.com/js/api.js';
+  s1.onload=()=>gapi.load('client',async()=>{
+    await gapi.client.init({discoveryDocs:['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']});
+    gapiInited=true;
+  });
+  document.head.appendChild(s1);
+  const s2=document.createElement('script'); s2.src='https://accounts.google.com/gsi/client';
+  s2.onload=()=>{
+    tokenClient=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:SCOPES,
+      callback:async(resp)=>{
+        if(resp.error){console.error(resp);return;}
+        driveConnected=true; setDriveReady();
+        if(pendingDriveAction==='load'){await fetchFromDrive();}
+        else{await syncToDrive();}
+        pendingDriveAction=null;
+      }
+    });
+    gisInited=true;
+  };
+  document.head.appendChild(s2);
+}
+function setDriveReady() {
+  const b=document.getElementById('drive-btn'); b.textContent='☁ Drive ✓'; b.style.color='#b5cdb7';
+}
+async function saveToDrive() {
+  const id = EMBEDDED_CLIENT_ID;
+  localStorage.setItem('driveClientId', id);
+  pendingDriveAction='save';
+  if(!tokenClient){loadGapi(id);setTimeout(()=>tokenClient&&tokenClient.requestAccessToken({prompt:''}),2500);return;}
+  tokenClient.requestAccessToken({prompt:''});
+}
+async function loadFromDrive() {
+  const id = EMBEDDED_CLIENT_ID;
+  localStorage.setItem('driveClientId', id);
+  pendingDriveAction='load';
+  if(!tokenClient){loadGapi(id);setTimeout(()=>tokenClient&&tokenClient.requestAccessToken({prompt:''}),2500);return;}
+  tokenClient.requestAccessToken({prompt:''});
+}
+async function syncToDrive() {
+  const blob=new Blob([JSON.stringify(classes,null,2)],{type:'application/json'});
+  const search=await gapi.client.drive.files.list({q:`name='${DRIVE_FILE}' and trashed=false`,fields:'files(id)'});
+  const files=search.result.files;
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify({name:DRIVE_FILE,mimeType:'application/json'})],{type:'application/json'}));
+  form.append('file',blob);
+  const has=files&&files.length;
+  const resp=await fetch(has?`https://www.googleapis.com/upload/drive/v3/files/${files[0].id}?uploadType=multipart`:`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`,
+    {method:has?'PATCH':'POST',headers:{Authorization:'Bearer '+gapi.client.getToken().access_token},body:form});
+  if(resp.ok){const s=document.getElementById('save-status');if(s)s.textContent='☁ Synced to Drive · '+new Date().toLocaleTimeString();}
+}
+async function fetchFromDrive() {
+  try {
+    const search=await gapi.client.drive.files.list({q:`name='${DRIVE_FILE}' and trashed=false`,fields:'files(id)'});
+    const files=search.result.files;
+    if(!files||!files.length){alert('No saved classes found in Google Drive.');return;}
+    const resp=await fetch(`https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media`,
+      {headers:{Authorization:'Bearer '+gapi.client.getToken().access_token}});
+    const data=await resp.json();
+    if(Array.isArray(data)&&data.length){
+      classes=data;
+      localStorage.setItem('yogaClasses',JSON.stringify(classes));
+      currentClassId=null; renderSidebar('');
+      document.getElementById('main-area').innerHTML=`<div class="welcome"><div class="welcome-icon">🌿</div><h2>${classes.length} class${classes.length!==1?'es':''} loaded!</h2><p>Select a class from the sidebar to continue.</p></div>`;
+    } else { alert('No classes found in your Drive file.'); }
+  } catch(e){console.error(e);alert('Could not load from Drive. Please try again.');}
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+renderSidebar();
+loadGapi(EMBEDDED_CLIENT_ID);
+setTimeout(setDriveReady, 2000);
+</script>
+</body>
+</html>
