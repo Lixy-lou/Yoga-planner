@@ -103,7 +103,6 @@
   .pose-name-col { flex: 1; min-width: 0; }
   .pose-name-input { width: 100%; border: none; border-bottom: 1px solid var(--warm); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: var(--ink); padding: 3px 0; outline: none; }
   .pose-name-input:focus { border-bottom-color: var(--sage); }
-  .pose-name-input::-webkit-calendar-picker-indicator { display: none !important; }
   .pose-sanskrit { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 13px; color: var(--sage-dark); margin-top: 3px; min-height: 18px; transition: all 0.3s; }
   .pose-sanskrit.not-found { color: #ccc; font-style: italic; }
 
@@ -595,11 +594,8 @@ function poseCardHTML(p, i, total) {
           <div class="pose-card-header">
             <div class="pose-number">${i+1}</div>
             <div class="pose-name-col">
-              <input class="pose-name-input" list="pose-suggestions" placeholder="Pose name (e.g. Downward Dog)…" value="${esc(p.name||'')}"
+              <input class="pose-name-input" placeholder="Pose name (e.g. Downward Dog)…" value="${esc(p.name||'')}"
                 oninput="updatePoseAndSanskrit(${i},this.value)">
-              <datalist id="pose-suggestions">
-                ${Object.keys(SANSKRIT).filter(k=>!k.includes(' ')||k.split(' ').length<=4).map(k=>`<option value="${k.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')}">`).join('')}
-              </datalist>
               ${sanskritHTML}
             </div>
           </div>
@@ -673,7 +669,7 @@ function updatePoseAndSanskrit(i, value) {
 // ── POSE ACTIONS ───────────────────────────────────────────────
 function addPose() {
   const cls = getClass(); if (!cls) return;
-  cls.poses.push({ name:'', duration:'1/2 breath', side:'n/a', notes:'', transition:'', sanskrit:'' }); save();
+  cls.poses.push({ name:'', duration:'', side:'both', notes:'', transition:'', sanskrit:'' }); save();
   document.getElementById('pose-list').innerHTML = renderPoses(cls.poses);
   document.querySelectorAll('.pose-name-input').forEach((el,i,a)=>{ if(i===a.length-1) el.focus(); });
 }
