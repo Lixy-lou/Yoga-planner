@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prana Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #7a9e7e; --sage-light: #b5cdb7; --sage-dark: #4a6b4e;
+    --cream: #f7f3ee; --warm: #e8ddd0; --clay: #c4956a; --clay-light: #e8c9a8;
+    --ink: #2a2420; --ink-soft: #5a4f48; --white: #fdfaf7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; font-size: 15px; }
+
+  header { background: var(--ink); color: var(--cream); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(42,36,32,0.3); }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 300; letter-spacing: 0.04em; }
+  .logo span { color: var(--sage-light); font-style: italic; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+
+  .btn { padding: 7px 14px; border-radius: 4px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.03em; transition: all 0.2s; white-space: nowrap; }
+  .btn-primary { background: var(--sage); color: white; }
+  .btn-primary:hover { background: var(--sage-dark); }
+  .btn-secondary { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.3); }
+  .btn-secondary:hover { border-color: var(--sage-light); color: var(--sage-light); }
+  .btn-clay { background: var(--clay); color: white; }
+  .btn-clay:hover { background: #b07d52; }
+  .btn-ghost { background: transparent; color: var(--ink-soft); border: 1px solid var(--warm); }
+  .btn-ghost:hover { border-color: var(--sage); color: var(--sage-dark); }
+  .btn-danger { background: transparent; color: #c0392b; border: 1px solid #e8c0bc; font-size: 11px; padding: 5px 12px; }
+  .btn-danger:hover { background: #fdf0ef; }
+  .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+  .app { display: flex; min-height: calc(100vh - 58px); }
+
+  /* SIDEBAR */
+  .sidebar { width: 260px; min-width: 260px; background: var(--white); border-right: 1px solid var(--warm); display: flex; flex-direction: column; }
+  .sidebar-header { padding: 16px 16px 10px; border-bottom: 1px solid var(--warm); display: flex; justify-content: space-between; align-items: center; }
+  .sidebar-title { font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); letter-spacing: 0.07em; text-transform: uppercase; }
+  .search-box { padding: 9px 14px; border-bottom: 1px solid var(--warm); }
+  .search-box input { width: 100%; padding: 6px 10px; border: 1px solid var(--warm); border-radius: 4px; background: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); outline: none; }
+  .search-box input:focus { border-color: var(--sage); }
+  .search-box input::placeholder { color: #bbb; }
+  .class-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+  .class-item { padding: 10px 16px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; }
+  .class-item:hover { background: var(--cream); border-left-color: var(--sage-light); }
+  .class-item.active { background: #edf3ee; border-left-color: var(--sage); }
+  .class-item-name { font-weight: 500; font-size: 13px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .class-item-meta { font-size: 11px; color: var(--ink-soft); display: flex; gap: 7px; align-items: center; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 20px; font-size: 10px; font-weight: 500; }
+  .badge-Beginner { background: #e8f4e8; color: #4a7a4a; }
+  .badge-Intermediate { background: #fef3e2; color: #9a6a20; }
+  .badge-Advanced { background: #fde8e8; color: #9a3030; }
+  .badge-AllLevels { background: #ece8f4; color: #5a4a7a; }
+  .empty-sidebar { padding: 30px 16px; text-align: center; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }
+
+  .main { flex: 1; overflow-y: auto; }
+  .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh; text-align: center; padding: 24px; }
+  .welcome-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.6; }
+  .welcome h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; margin-bottom: 10px; }
+  .welcome p { color: var(--ink-soft); max-width: 400px; line-height: 1.7; margin-bottom: 22px; }
+
+  .class-view { padding: 28px 32px; max-width: 780px; }
+  .class-header { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--warm); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .class-header-left { flex: 1; }
+  .class-title-input { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; border: none; background: transparent; color: var(--ink); width: 100%; outline: none; margin-bottom: 10px; }
+  .class-title-input::placeholder { color: #ccc; }
+  .meta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .meta-field { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); }
+  .meta-field label { font-weight: 500; white-space: nowrap; }
+  .meta-field input, .meta-field select { border: 1px solid var(--warm); border-radius: 4px; padding: 3px 8px; font-family: 'DM Sans', sans-serif; font-size: 12px; background: var(--cream); color: var(--ink); outline: none; }
+
+  .section { margin-bottom: 22px; }
+  .section-title { font-size: 0.7rem; font-weight: 600; color: var(--sage-dark); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 9px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--warm); }
+
+  textarea.field { width: 100%; padding: 9px 12px; border: 1px solid var(--warm); border-radius: 6px; background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); resize: vertical; min-height: 65px; outline: none; line-height: 1.6; }
+  textarea.field:focus { border-color: var(--sage); }
+  input.field { width: 100%; padding: 8px 12px; border: 1px solid var(--warm); border-radius: 6px; background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); outline: none; }
+  input.field:focus { border-color: var(--sage); }
+
+  .spotify-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #1db954; color: white; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: 500; margin-top: 8px; }
+  .spotify-link:hover { background: #17a349; }
+
+  /* ── SEQUENCE ── */
+  .seq-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; min-height: 30px; }
+  .sel-count { font-size: 12px; color: var(--sage-dark); font-weight: 500; }
+
+  /* GROUP HEADER */
+  .group-hdr {
+    display: flex; align-items: center; gap: 8px; padding: 7px 12px;
+    background: var(--sage-dark); color: white; border-radius: 6px 6px 0 0;
+    margin-top: 12px; position: relative;
+  }
+  .group-hdr-name {
+    flex: 1; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3);
+    color: white; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    outline: none; padding: 1px 0; min-width: 80px;
+  }
+  .group-hdr-name::placeholder { color: rgba(255,255,255,0.4); }
+  .group-hdr-meta { display: flex; gap: 6px; align-items: center; font-size: 11px; flex-shrink: 0; }
+  .group-hdr-meta label { color: rgba(255,255,255,0.65); }
+  .group-hdr-meta input[type=number] { width: 44px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: white; border-radius: 3px; padding: 2px 5px; font-family: 'DM Sans', sans-serif; font-size: 11px; outline: none; }
+  .group-hdr-meta select { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: white; border-radius: 3px; padding: 2px 5px; font-family: 'DM Sans', sans-serif; font-size: 11px; outline: none; }
+  .group-hdr-meta select option { background: #2a2420; }
+  .group-hdr-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 14px; padding: 2px 4px; }
+  .group-hdr-btn:hover { color: white; }
+
+  /* POSE ROW */
+  .pose-block { }
+  .pose-block.in-group:last-of-type .pose-row { border-radius: 0 0 6px 6px; }
+  .pose-block.selected > .pose-row { background: #edf3ee; }
+
+  .pose-row {
+    display: flex; align-items: center; gap: 7px; padding: 7px 12px;
+    background: var(--white); border: 1px solid var(--warm); border-top: none;
+    transition: background 0.1s;
+  }
+  .pose-block:first-child .pose-row,
+  .group-hdr + .pose-block .pose-row { border-top: none; }
+  .pose-block.in-group .pose-row { border-left: 3px solid var(--sage-light); }
+
+  .pose-check {
+    width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid #ddd;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    cursor: pointer; background: white; font-size: 10px; color: white;
+    transition: all 0.15s;
+  }
+  .pose-check.on { background: var(--sage); border-color: var(--sage); }
+
+  .pose-num { width: 20px; height: 20px; border-radius: 50%; background: var(--sage); color: white; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .pose-name-inp {
+    flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--ink); outline: none; min-width: 0;
+  }
+  .pose-name-inp::placeholder { color: #ccc; }
+
+  .pose-sanskrit { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 12px; color: var(--sage-dark); white-space: nowrap; flex-shrink: 0; }
+  .pose-prop-tags { display: flex; gap: 3px; flex-shrink: 0; flex-wrap: wrap; }
+  .ppt { display: inline-block; padding: 1px 5px; background: var(--clay-light); border-radius: 20px; font-size: 10px; }
+
+  .pose-act { background: none; border: none; cursor: pointer; color: #ccc; font-size: 13px; padding: 2px 3px; border-radius: 3px; }
+  .pose-act:hover { color: var(--ink-soft); background: var(--warm); }
+  .pose-act.del:hover { color: #c0392b; background: #fde8e8; }
+
+  /* POSE DETAILS */
+  .pose-details {
+    display: none; padding: 8px 12px 10px 58px;
+    background: #faf7f4; border: 1px solid var(--warm); border-top: none;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .pose-details.open { display: flex; }
+  .pose-block.in-group .pose-details { border-left: 3px solid var(--sage-light); }
+  .pd-field { display: flex; flex-direction: column; gap: 3px; min-width: 110px; }
+  .pd-field label { font-size: 10px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; }
+  .pd-field input, .pd-field select { padding: 4px 8px; border: 1px solid var(--warm); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 12px; background: var(--white); color: var(--ink); outline: none; }
+  .pd-field textarea { padding: 4px 8px; border: 1px solid var(--warm); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 12px; background: var(--white); color: var(--ink); outline: none; resize: none; }
+  .pd-props { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  .pd-prop-tag { display: inline-flex; align-items: center; padding: 2px 7px; background: var(--clay-light); border: 1px solid var(--clay); border-radius: 20px; font-size: 11px; }
+  .pd-prop-inp { border: none; border-bottom: 1px solid var(--warm); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12px; outline: none; min-width: 130px; padding: 1px 3px; }
+  .pd-prop-inp::placeholder { color: #ccc; }
+  .pd-prop-inp:focus { border-bottom-color: var(--sage); }
+
+  /* QUICK ADD */
+  .quick-add-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--cream); border: 1px solid var(--warm); border-top: none; border-radius: 0 0 6px 6px; margin-bottom: 4px; }
+  .autocomplete-wrap { position: relative; flex: 1; }
+  .quick-add-inp { width: 100%; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); outline: none; }
+  .quick-add-inp::placeholder { color: #bbb; }
+  .ac-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 300; background: var(--white); border: 1px solid var(--warm); border-radius: 6px; box-shadow: 0 4px 20px rgba(42,36,32,0.15); max-height: 180px; overflow-y: auto; display: none; }
+  .ac-list.show { display: block; }
+  .ac-item { padding: 7px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f5f0ea; }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover { background: #edf3ee; color: var(--sage-dark); }
+  .ac-item small { color: var(--sage); font-family: 'Cormorant Garamond', serif; font-style: italic; margin-left: 6px; }
+
+  /* GROUP MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(42,36,32,0.5); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--white); border-radius: 10px; padding: 28px; max-width: 440px; width: 90%; box-shadow: 0 20px 60px rgba(42,36,32,0.3); }
+  .modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; margin-bottom: 14px; }
+  .modal-actions { display: flex; gap: 9px; justify-content: flex-end; margin-top: 18px; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { display: block; font-size: 11px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .modal-field input, .modal-field select { width: 100%; padding: 7px 10px; border: 1px solid var(--warm); border-radius: 5px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--cream); color: var(--ink); outline: none; }
+  .modal-field input:focus, .modal-field select:focus { border-color: var(--sage); }
+  .existing-groups { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .existing-group-btn { padding: 8px 12px; border: 1px solid var(--warm); border-radius: 5px; background: var(--cream); cursor: pointer; text-align: left; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink); transition: all 0.15s; }
+  .existing-group-btn:hover { border-color: var(--sage); background: #edf3ee; color: var(--sage-dark); }
+  .existing-group-btn small { color: var(--ink-soft); font-size: 11px; margin-left: 6px; }
+
+  .group-hdr.collapsed + .pose-block,
+  .group-hdr.collapsed ~ .pose-block { display: none; }
+  .group-hdr-btn.collapse-btn { font-size: 16px; transition: transform 0.2s; }
+  .group-hdr.collapsed .collapse-btn { transform: rotate(-90deg); }
+
+  .pose-detail-summary { font-size: 11px; color: var(--ink-soft); white-space: nowrap; flex-shrink: 0; display: flex; gap: 5px; }
+  .pose-detail-chip { background: var(--cream); border: 1px solid var(--warm); border-radius: 10px; padding: 1px 6px; font-size: 10px; color: var(--ink-soft); }
+
+  /* LIBRARY */
+  .library-empty { text-align:center; padding:24px; color:var(--ink-soft); font-size:13px; line-height:1.7; }
+  .library-item { display:flex; align-items:center; gap:10px; padding:12px 14px; border:1px solid var(--warm); border-radius:6px; margin-bottom:8px; background:var(--cream); cursor:pointer; transition:all 0.15s; }
+  .library-item:hover { border-color:var(--sage); background:#edf3ee; }
+  .library-item-info { flex:1; }
+  .library-item-name { font-weight:600; font-size:14px; color:var(--ink); margin-bottom:3px; }
+  .library-item-meta { font-size:11px; color:var(--ink-soft); }
+  .library-item-del { background:none; border:none; cursor:pointer; color:#ccc; font-size:16px; padding:2px 4px; border-radius:3px; }
+  .library-item-del:hover { color:#c0392b; background:#fde8e8; }
+  .insert-position-btn { width:100%; padding:10px 14px; border:1px solid var(--warm); border-radius:5px; background:var(--cream); cursor:pointer; text-align:left; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); margin-bottom:6px; transition:all 0.15s; }
+  .insert-position-btn:hover { border-color:var(--sage); background:#edf3ee; color:var(--sage-dark); }
+
+  /* SAVE BAR */
+  .save-bar { position: sticky; bottom: 0; background: var(--white); border-top: 1px solid var(--warm); padding: 11px 32px; display: flex; gap: 9px; align-items: center; }
+  .save-status { font-size: 11px; color: var(--ink-soft); margin-right: auto; font-style: italic; }
+
+  .date-label { font-size: 10px; color: #bbb; margin-top: 2px; }
+
+  @media (max-width: 680px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: unset; display: flex; max-height: 320px; }
+    .class-list { max-height: 260px; overflow-y: auto; }
+    .class-view { padding: 16px; }
+    header { padding: 12px 16px; }
+    .save-bar { padding: 10px 16px; }
+    .group-hdr-meta { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">prana <span>flow</span></div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="loadFromDrive()" id="load-btn">☁ Load</button>
+    <button class="btn btn-secondary" id="drive-btn" onclick="connectDrive()">☁ Drive</button>
+    <button class="btn btn-primary" onclick="newClass()">+ New Class</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">My Classes</span>
+      <span id="class-count" style="font-size:11px;color:#bbb;">0 saved</span>
+    </div>
+    <div class="search-box">
+      <input type="text" placeholder="Search classes…" oninput="filterClasses(this.value)" id="search-input">
+    </div>
+    <div class="class-list" id="class-list">
+      <div class="empty-sidebar"><div style="font-size:2rem;margin-bottom:8px;">🌿</div>No classes yet.</div>
+    </div>
+  </aside>
+  <main class="main" id="main-area">
+    <div class="welcome">
+      <div class="welcome-icon">🧘</div>
+      <h2>Your Yoga Class Planner</h2>
+      <p>Build sequences, group poses, attach playlists, and sync across devices.</p>
+      <button class="btn btn-primary" style="padding:11px 26px;font-size:13px;" onclick="newClass()">Create Class</button>
+    </div>
+  </main>
+</div>
+
+<!-- Delete class modal -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <h3>Delete this class?</h3>
+    <p style="color:var(--ink-soft);font-size:13px;margin-bottom:16px;">This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('delete-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drive modal -->
+<div class="modal-overlay" id="drive-modal">
+  <div class="modal">
+    <h3>Connect Google Drive</h3>
+    <p style="color:var(--ink-soft);font-size:13px;margin-bottom:16px;">Your classes sync to your Drive, accessible from any device.</p>
+    <div id="drive-modal-content">
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('drive-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="connectDrive()">Connect</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Library modal -->
+<div class="modal-overlay" id="library-modal">
+  <div class="modal" style="max-width:500px;">
+    <h3>📚 Pose Library</h3>
+    <div id="library-modal-body"></div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn btn-ghost" onclick="closeModal('library-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Insert position modal -->
+<div class="modal-overlay" id="insert-modal">
+  <div class="modal" style="max-width:460px;">
+    <h3 id="insert-modal-title">Insert Group</h3>
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">Choose where to insert in the sequence:</p>
+    <div id="insert-modal-body"></div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn btn-ghost" onclick="closeModal('insert-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="group-modal">
+  <div class="modal">
+    <h3 id="group-modal-title">Group Selected Poses</h3>
+    <div id="group-modal-body"></div>
+    <div class="modal-actions" id="group-modal-actions"></div>
+  </div>
+</div>
+
+<script>
+// ── SANSKRIT LOOKUP ────────────────────────────────────────────
+const SANSKRIT = {
+  "mountain pose":"Tadasana","tadasana":"Tadasana","mountain":"Tadasana",
+  "warrior i":"Virabhadrasana I","warrior 1":"Virabhadrasana I",
+  "warrior ii":"Virabhadrasana II","warrior 2":"Virabhadrasana II",
+  "warrior iii":"Virabhadrasana III","warrior 3":"Virabhadrasana III",
+  "warrior":"Virabhadrasana",
+  "triangle pose":"Trikonasana","extended triangle":"Utthita Trikonasana","trikonasana":"Trikonasana",
+  "tree pose":"Vrksasana","vrksasana":"Vrksasana",
+  "chair pose":"Utkatasana","utkatasana":"Utkatasana","fierce pose":"Utkatasana",
+  "standing forward fold":"Uttanasana","forward fold":"Uttanasana","uttanasana":"Uttanasana",
+  "half standing forward fold":"Ardha Uttanasana","halfway lift":"Ardha Uttanasana",
+  "crescent lunge":"Anjaneyasana","low lunge":"Anjaneyasana","anjaneyasana":"Anjaneyasana",
+  "high lunge":"Utthita Ashwa Sanchalanasana",
+  "extended side angle":"Utthita Parsvakonasana","side angle":"Parsvakonasana",
+  "pyramid pose":"Parsvottanasana",
+  "revolved triangle":"Parivrtta Trikonasana","revolved side angle":"Parivrtta Parsvakonasana",
+  "eagle pose":"Garudasana","garudasana":"Garudasana",
+  "half moon":"Ardha Chandrasana",
+  "goddess pose":"Utkata Konasana",
+  "wide legged forward fold":"Prasarita Padottanasana",
+  "garland pose":"Malasana","malasana":"Malasana","squat":"Malasana",
+  "dancer pose":"Natarajasana","lord of the dance":"Natarajasana",
+  "staff pose":"Dandasana",
+  "seated forward fold":"Paschimottanasana","paschimottanasana":"Paschimottanasana",
+  "bound angle":"Baddha Konasana","butterfly pose":"Baddha Konasana","baddha konasana":"Baddha Konasana",
+  "wide angle seated forward fold":"Upavistha Konasana",
+  "half lord of the fishes":"Ardha Matsyendrasana","seated spinal twist":"Ardha Matsyendrasana",
+  "hero pose":"Virasana","virasana":"Virasana",
+  "lotus pose":"Padmasana","padmasana":"Padmasana","half lotus":"Ardha Padmasana",
+  "easy pose":"Sukhasana","sukhasana":"Sukhasana",
+  "fire log pose":"Agnistambhasana","double pigeon":"Agnistambhasana",
+  "cow face pose":"Gomukhasana","gomukhasana":"Gomukhasana",
+  "head to knee pose":"Janu Sirsasana",
+  "boat pose":"Navasana","navasana":"Navasana","half boat":"Ardha Navasana",
+  "corpse pose":"Savasana","savasana":"Savasana","shavasana":"Savasana","relaxation pose":"Savasana",
+  "happy baby":"Ananda Balasana","happy baby pose":"Ananda Balasana",
+  "knees to chest":"Apanasana","apanasana":"Apanasana",
+  "supine twist":"Supta Matsyendrasana","reclined twist":"Supta Matsyendrasana",
+  "bridge pose":"Setu Bandha Sarvangasana","setu bandha":"Setu Bandha Sarvangasana",
+  "wheel pose":"Urdhva Dhanurasana","upward bow":"Urdhva Dhanurasana",
+  "fish pose":"Matsyasana","matsyasana":"Matsyasana",
+  "legs up the wall":"Viparita Karani","viparita karani":"Viparita Karani",
+  "shoulder stand":"Sarvangasana","sarvangasana":"Sarvangasana",
+  "plow pose":"Halasana","halasana":"Halasana",
+  "reclining hero":"Supta Virasana",
+  "reclined bound angle":"Supta Baddha Konasana",
+  "cobra pose":"Bhujangasana","bhujangasana":"Bhujangasana",
+  "upward facing dog":"Urdhva Mukha Svanasana","up dog":"Urdhva Mukha Svanasana",
+  "locust pose":"Salabhasana","salabhasana":"Salabhasana",
+  "bow pose":"Dhanurasana","dhanurasana":"Dhanurasana",
+  "sphinx pose":"Salamba Bhujangasana","baby cobra":"Ardha Bhujangasana",
+  "frog pose":"Mandukasana","mandukasana":"Mandukasana","half frog":"Ardha Bhekasana",
+  "downward facing dog":"Adho Mukha Svanasana","downward dog":"Adho Mukha Svanasana","down dog":"Adho Mukha Svanasana",
+  "cat pose":"Marjaryasana","marjaryasana":"Marjaryasana",
+  "cow pose":"Bitilasana","bitilasana":"Bitilasana",
+  "cat cow":"Marjaryasana-Bitilasana","cat-cow":"Marjaryasana-Bitilasana",
+  "thread the needle":"Parsva Balasana",
+  "child's pose":"Balasana","childs pose":"Balasana","balasana":"Balasana","extended child's pose":"Utthita Balasana",
+  "puppy pose":"Uttana Shishosana",
+  "table top":"Bharmanasana","tabletop":"Bharmanasana",
+  "plank pose":"Phalakasana","phalakasana":"Phalakasana","plank":"Phalakasana",
+  "low plank":"Chaturanga Dandasana","chaturanga":"Chaturanga Dandasana","four limbed staff":"Chaturanga Dandasana",
+  "side plank":"Vasisthasana","vasisthasana":"Vasisthasana",
+  "pigeon pose":"Eka Pada Rajakapotasana",
+  "sleeping pigeon":"Supta Kapotasana","reclined pigeon":"Supta Kapotasana",
+  "eye of needle":"Sucirandhrasana","figure four":"Sucirandhrasana",
+  "lizard pose":"Utthan Pristhasana",
+  "monkey pose":"Hanumanasana","hanumanasana":"Hanumanasana","splits":"Hanumanasana",
+  "crow pose":"Bakasana","bakasana":"Bakasana","crane pose":"Bakasana",
+  "headstand":"Sirsasana","sirsasana":"Sirsasana",
+  "forearm stand":"Pincha Mayurasana","pincha mayurasana":"Pincha Mayurasana",
+  "handstand":"Adho Mukha Vrksasana",
+  "revolved chair":"Parivrtta Utkatasana","twisted chair":"Parivrtta Utkatasana",
+  "revolved lunge":"Parivrtta Anjaneyasana",
+  "alternate nostril breathing":"Nadi Shodhana","nadi shodhana":"Nadi Shodhana",
+  "ujjayi breath":"Ujjayi Pranayama","ujjayi":"Ujjayi Pranayama",
+  "kapalabhati":"Kapalabhati Pranayama","breath of fire":"Kapalabhati Pranayama",
+  "reclined butterfly":"Supta Baddha Konasana",
+  "half wind removing":"Ardha Pavanamuktasana","full wind removing":"Pavanamuktasana",
+  "half happy baby":"Ardha Ananda Balasana",
+};
+
+function lookupSanskrit(name) {
+  if (!name) return '';
+  const key = name.trim().toLowerCase().replace(/[''']/g,"'").replace(/\s+/g,' ');
+  if (SANSKRIT[key]) return SANSKRIT[key];
+  for (const k of Object.keys(SANSKRIT)) { if (key.includes(k)||k.includes(key)) return SANSKRIT[k]; }
+  return '';
+}
+
+const ALL_POSES = Object.keys(SANSKRIT)
+  .map(k=>({ english: k.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '), sanskrit: SANSKRIT[k] }))
+  .filter((v,i,a)=>a.findIndex(x=>x.sanskrit===v.sanskrit)===i)
+  .sort((a,b)=>a.english.localeCompare(b.english));
+
+// ── STATE ──────────────────────────────────────────────────────
+// Data model:
+// class.poses = flat array of pose objects, order = sequence order
+// class.groups = array of group objects { id, name, rounds, side }
+// each pose has groupId (null = ungrouped) referencing a group
+
+let classes = JSON.parse(localStorage.getItem('yogaClasses') || '[]');
+let currentClassId = null;
+let deleteTargetId = null;
+let selectedPoseIds = new Set();
+let driveConnected = false, gapiInited = false, gisInited = false, tokenClient = null;
+let pendingDriveAction = null;
+const DRIVE_FILE = 'yoga-planner-data.json';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const CLIENT_ID = '92105548723-60tappk2ndsdigtig3469dcuv4fd99dc.apps.googleusercontent.com';
+const SIDES = ['—','Right','Left','Both','Right then Left'];
+
+// ── HELPERS ────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function uid() { return 'p'+Date.now()+Math.random().toString(36).slice(2,6); }
+function getClass() { return classes.find(c=>c.id===currentClassId); }
+
+// ── SIDEBAR ────────────────────────────────────────────────────
+function renderSidebar(filter='') {
+  const list = document.getElementById('class-list');
+  document.getElementById('class-count').textContent = classes.length + ' saved';
+  const filtered = filter ? classes.filter(c=>(c.name||'').toLowerCase().includes(filter.toLowerCase())) : classes;
+  if (!filtered.length) { list.innerHTML=`<div class="empty-sidebar">${filter?'🔍 No matches.':'🌿 No classes yet.'}</div>`; return; }
+  list.innerHTML=[...filtered].sort((a,b)=>b.createdAt-a.createdAt).map(c=>`
+    <div class="class-item ${c.id===currentClassId?'active':''}" onclick="openClass('${c.id}')">
+      <div class="class-item-name">${esc(c.name||'Untitled Class')}</div>
+      <div class="class-item-meta">
+        <span>${c.duration?c.duration+' min':'--'}</span>
+        <span class="badge badge-${(c.difficulty||'AllLevels').replace(/\s/g,'')}">${c.difficulty||'All Levels'}</span>
+      </div>
+      <div class="date-label">${(c.poses||[]).length} poses · ${new Date(c.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+    </div>`).join('');
+}
+function filterClasses(v) { renderSidebar(v); }
+
+// ── CLASS CRUD ─────────────────────────────────────────────────
+function newClass() {
+  const cls = { id:'c'+Date.now(), name:'', duration:'', difficulty:'All Levels', intentions:'', spotifyUrl:'', poses:[], groups:[], createdAt:Date.now() };
+  classes.push(cls); save();
+  renderSidebar(document.getElementById('search-input').value);
+  openClass(cls.id);
+}
+function openClass(id) {
+  currentClassId=id; selectedPoseIds=new Set();
+  const cls=classes.find(c=>c.id===id); if(!cls) return;
+  // Migrate old format if needed
+  if (!cls.poses && cls.groups) migrateOldFormat(cls);
+  if (!cls.poses) cls.poses=[];
+  if (!cls.groups) cls.groups=[];
+  renderSidebar(document.getElementById('search-input').value);
+  renderClassView(cls);
+}
+
+function migrateOldFormat(cls) {
+  // Old format had cls.groups with poses inside each group
+  const newPoses=[], newGroups=[];
+  (cls.groups||[]).forEach(g=>{
+    const grp={id:'g'+Date.now()+Math.random().toString(36).slice(2,5), name:g.name, rounds:g.rounds||1, side:g.side||'—'};
+    newGroups.push(grp);
+    (g.poses||[]).forEach(p=>{
+      newPoses.push({...p, id:uid(), groupId:grp.id});
+    });
+  });
+  cls.poses=newPoses; cls.groups=newGroups;
+}
+
+// ── RENDER CLASS ───────────────────────────────────────────────
+function renderClassView(cls) {
+  selectedPoseIds = new Set();
+  document.getElementById('main-area').innerHTML=`
+    <div class="class-view">
+      <div class="class-header">
+        <div class="class-header-left">
+          <input class="class-title-input" placeholder="Class name or theme…" value="${esc(cls.name||'')}" oninput="updateField('name',this.value)">
+          <div class="meta-row">
+            <div class="meta-field"><label>Duration</label><input type="number" min="1" max="240" value="${cls.duration||''}" placeholder="60" style="width:58px;" oninput="updateField('duration',this.value)"> min</div>
+            <div class="meta-field"><label>Level</label>
+              <select onchange="updateField('difficulty',this.value)">
+                ${['All Levels','Beginner','Intermediate','Advanced'].map(l=>`<option value="${l}" ${cls.difficulty===l?'selected':''}>${l}</option>`).join('')}
+              </select>
+            </div>
+            <div class="meta-field" style="color:#bbb;font-size:11px;">Created ${new Date(cls.createdAt).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="deleteClass('${cls.id}')">✕ Delete</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Intentions & Notes</div>
+        <textarea class="field" placeholder="Set the intention for this class…" rows="2" oninput="updateField('intentions',this.value)">${esc(cls.intentions||'')}</textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Spotify Playlist</div>
+        <input class="field" id="spotify-inp" type="url" placeholder="Paste Spotify playlist link…" value="${esc(cls.spotifyUrl||'')}" oninput="updateField('spotifyUrl',this.value)">
+        ${cls.spotifyUrl?`<a href="${cls.spotifyUrl}" target="_blank" class="spotify-link">▶ Open in Spotify</a>`:''}
+      </div>
+
+      <div class="section">
+        <div class="section-title">Sequence</div>
+        <div class="seq-toolbar" id="seq-toolbar">
+          <button class="btn btn-ghost btn-sm" onclick="openLibraryModal()">📚 From Library</button>
+          <span class="sel-count" id="sel-count" style="display:none;"></span>
+          <button class="btn btn-ghost btn-sm" id="group-btn" onclick="openGroupModal()" style="display:none;">Group Selected</button>
+          <button class="btn btn-ghost btn-sm" id="ungroup-btn" onclick="ungroupSelected()" style="display:none;">Remove from Group</button>
+          <button class="btn btn-ghost btn-sm" id="clear-sel-btn" onclick="clearSelection()" style="display:none;">Clear</button>
+        </div>
+        <div id="pose-list">${renderPoseList(cls)}</div>
+      </div>
+    </div>
+    <div class="save-bar">
+      <span class="save-status" id="save-status">All changes saved</span>
+      <button class="btn btn-ghost" onclick="exportJSON()">⬇ Export</button>
+      <button class="btn btn-clay" onclick="saveToDrive()">☁ Sync All Classes</button>
+    </div>
+  `;
+}
+
+// ── RENDER POSE LIST ───────────────────────────────────────────
+function renderPoseList(cls) {
+  const poses = cls.poses || [];
+  const groups = cls.groups || [];
+  if (!poses.length) return renderQuickAdd();
+
+  let html = '';
+  let lastGroupId = 'NONE_YET';
+  let poseNum = 0;
+
+  poses.forEach((p, i) => {
+    const gid = p.groupId || null;
+    const grp = gid ? groups.find(g=>g.id===gid) : null;
+
+    // If new group starts, render group header
+    if (gid !== lastGroupId) {
+      if (gid && grp) {
+        html += `
+          <div class="group-hdr collapsed" id="ghdr-${grp.id}">
+            <button class="group-hdr-btn collapse-btn" onclick="toggleGroupCollapse('${grp.id}')" title="Expand group">▾</button>
+            <input class="group-hdr-name" value="${esc(grp.name||'')}" placeholder="Group name…"
+              oninput="updateGroup('${grp.id}','name',this.value)">
+            <div class="group-hdr-meta">
+              <label>Rounds</label>
+              <input type="number" min="1" max="20" value="${grp.rounds||1}" style="width:44px;"
+                oninput="updateGroup('${grp.id}','rounds',parseInt(this.value)||1)">
+              <label>Side</label>
+              <select onchange="updateGroup('${grp.id}','side',this.value)">
+                ${SIDES.map(s=>`<option value="${s}" ${(grp.side||'—')===s?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>
+            <button class="group-hdr-btn" onclick="saveGroupToLibrary('${grp.id}')" title="Save to Library">☆</button>
+            <button class="group-hdr-btn" onclick="deleteGroup('${grp.id}')" title="Remove group (keeps poses)">✕</button>
+          </div>`;
+      }
+      lastGroupId = gid;
+    }
+
+    poseNum++;
+    // Poses in groups are hidden by default (groups start collapsed)
+    html += renderPoseBlock(p, poseNum, !!grp, i, poses.length, !!grp);
+  });
+
+  html += renderQuickAdd();
+  return html;
+}
+
+function renderPoseBlock(p, num, inGroup, idx, total, startHidden=false) {
+  const sanskrit = p.sanskrit || lookupSanskrit(p.name);
+  const hasDetails = p.duration || (p.side && p.side !== '—') || p.notes || (p.rounds && p.rounds > 1) || (p.props && p.props.length);
+  const isSelected = selectedPoseIds.has(p.id);
+  const propTags = (p.props||[]).map(pr=>`<span class="ppt">${esc(pr)}</span>`).join('');
+
+  // Build inline summary chips
+  const summaryChips = [];
+  if (p.duration) summaryChips.push(`<span class="pose-detail-chip">${esc(p.duration)}</span>`);
+  if (p.side && p.side !== '—') summaryChips.push(`<span class="pose-detail-chip">${esc(p.side)}</span>`);
+  if (p.rounds && p.rounds > 1) summaryChips.push(`<span class="pose-detail-chip">${p.rounds}×</span>`);
+  (p.props||[]).forEach(pr => summaryChips.push(`<span class="pose-detail-chip">${esc(pr)}</span>`));
+  const summaryHtml = summaryChips.length ? `<div class="pose-detail-summary">${summaryChips.join('')}</div>` : '';
+
+  return `
+    <div class="pose-block ${inGroup?'in-group':''} ${isSelected?'selected':''}" id="pb-${p.id}" ${startHidden?'style="display:none;"':''}>
+      <div class="pose-row" onclick="togglePoseDetails('${p.id}')">
+        <div class="pose-check ${isSelected?'on':''}" onclick="event.stopPropagation();toggleSelect('${p.id}')">
+          ${isSelected?'✓':''}
+        </div>
+        <div class="pose-num ${!inGroup?'ungrouped':''}">${num}</div>
+        <input class="pose-name-inp" value="${esc(p.name||'')}" placeholder="Pose name…"
+          oninput="updatePoseName('${p.id}',this.value)"
+          onclick="event.stopPropagation()"
+          autocomplete="off">
+        <span class="pose-sanskrit" id="sk-${p.id}">${esc(sanskrit)}</span>
+        ${summaryHtml}
+        ${propTags?`<div class="pose-prop-tags">${propTags}</div>`:''}
+        ${idx>0?`<button class="pose-act" onclick="event.stopPropagation();movePose('${p.id}',-1)">↑</button>`:''}
+        ${idx<total-1?`<button class="pose-act" onclick="event.stopPropagation();movePose('${p.id}',1)">↓</button>`:''}
+        <button class="pose-act del" onclick="event.stopPropagation();deletePose('${p.id}')">✕</button>
+      </div>
+      <div class="pose-details ${hasDetails?'open':''}" id="pd-${p.id}">
+        <div class="pd-field">
+          <label>Duration / Breaths</label>
+          <input type="text" value="${esc(p.duration||'')}" placeholder="e.g. 5 breaths"
+            oninput="updatePoseField('${p.id}','duration',this.value)">
+        </div>
+        <div class="pd-field">
+          <label>Side</label>
+          <select onchange="updatePoseField('${p.id}','side',this.value)">
+            ${['—','Both','Right','Left','N/A'].map(s=>`<option value="${s}" ${(p.side||'—')===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="pd-field">
+          <label>Rounds</label>
+          <input type="number" min="1" max="20" value="${p.rounds||1}" style="width:60px;"
+            oninput="updatePoseField('${p.id}','rounds',parseInt(this.value)||1)">
+        </div>
+        <div class="pd-field" style="flex:1 1 100%;">
+          <label>Props</label>
+          <div class="pd-props" id="pdp-${p.id}">
+            ${(p.props||[]).map(pr=>`<span class="pd-prop-tag">${esc(pr)} <button onclick="removeProp('${p.id}','${pr}')" style="background:none;border:none;cursor:pointer;color:var(--clay);margin-left:2px;">×</button></span>`).join('')}
+            <input class="pd-prop-inp" placeholder="Add prop, press Enter…" autocomplete="off"
+              onkeydown="addProp(event,'${p.id}')">
+          </div>
+        </div>
+        <div class="pd-field" style="flex:1 1 100%;">
+          <label>Cues / Notes</label>
+          <textarea rows="2" oninput="updatePoseField('${p.id}','notes',this.value)">${esc(p.notes||'')}</textarea>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderQuickAdd() {
+  return `
+    <div class="quick-add-row">
+      <span style="color:#ccc;">+</span>
+      <div class="autocomplete-wrap">
+        <input class="quick-add-inp" placeholder="Pose name, hit Enter to add…" autocomplete="off" id="quick-add-inp">
+        <div class="ac-list" id="ac-list"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="addPoseByButton()">Add</button>
+    </div>`;
+}
+
+// ── AUTOCOMPLETE (event delegation) ───────────────────────────
+document.addEventListener('input', function(e) {
+  if (!e.target.classList.contains('quick-add-inp')) return;
+  const val = e.target.value.trim().toLowerCase();
+  const list = document.getElementById('ac-list');
+  if (!list) return;
+  if (!val) { list.classList.remove('show'); list.innerHTML=''; return; }
+  const matches = ALL_POSES.filter(p=>p.english.toLowerCase().includes(val)||p.sanskrit.toLowerCase().includes(val)).slice(0,8);
+  if (!matches.length) { list.classList.remove('show'); list.innerHTML=''; return; }
+  list.innerHTML = matches.map(p=>`<div class="ac-item" data-name="${esc(p.english)}">${p.english} <small>${p.sanskrit}</small></div>`).join('');
+  list.classList.add('show');
+});
+
+document.addEventListener('mousedown', function(e) {
+  if (!e.target.classList.contains('ac-item')) return;
+  e.preventDefault();
+  const name = e.target.dataset.name;
+  const inp = document.getElementById('quick-add-inp');
+  if (inp) inp.value = name;
+  const list = document.getElementById('ac-list');
+  if (list) { list.classList.remove('show'); list.innerHTML=''; }
+  doAddPose(name);
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.classList.contains('quick-add-inp') && !e.target.classList.contains('ac-item')) {
+    const list = document.getElementById('ac-list');
+    if (list) { list.classList.remove('show'); list.innerHTML=''; }
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key==='Enter' && e.target.classList.contains('quick-add-inp')) {
+    e.preventDefault();
+    doAddPose(e.target.value.trim());
+    e.target.value='';
+    const list = document.getElementById('ac-list');
+    if (list) { list.classList.remove('show'); list.innerHTML=''; }
+  }
+});
+
+function addPoseByButton() {
+  const inp = document.getElementById('quick-add-inp');
+  if (!inp) return;
+  doAddPose(inp.value.trim());
+  inp.value='';
+}
+
+function doAddPose(name) {
+  if (!name) return;
+  const cls = getClass(); if (!cls) return;
+  const pose = { id:uid(), name, sanskrit:lookupSanskrit(name), groupId:null, duration:'', side:'—', rounds:1, notes:'', props:[] };
+  cls.poses.push(pose); save();
+  refreshPoseList();
+  setTimeout(()=>{ const i=document.getElementById('quick-add-inp'); if(i) i.focus(); },50);
+}
+
+// ── POSE ACTIONS ───────────────────────────────────────────────
+function togglePoseDetails(pid) {
+  const el = document.getElementById(`pd-${pid}`);
+  if (el) el.classList.toggle('open');
+}
+
+function updatePoseName(pid, value) {
+  const cls=getClass(); if(!cls) return;
+  const p=cls.poses.find(x=>x.id===pid); if(!p) return;
+  p.name=value; p.sanskrit=lookupSanskrit(value); save();
+  const sk=document.getElementById(`sk-${pid}`);
+  if(sk) sk.textContent=p.sanskrit;
+}
+
+function updatePoseField(pid, field, value) {
+  const cls=getClass(); if(!cls) return;
+  const p=cls.poses.find(x=>x.id===pid); if(!p) return;
+  p[field]=value; save();
+}
+
+function movePose(pid, dir) {
+  const cls=getClass(); if(!cls) return;
+  const i=cls.poses.findIndex(x=>x.id===pid); if(i<0) return;
+  const j=i+dir; if(j<0||j>=cls.poses.length) return;
+  [cls.poses[i],cls.poses[j]]=[cls.poses[j],cls.poses[i]]; save();
+  refreshPoseList();
+}
+
+function deletePose(pid) {
+  const cls=getClass(); if(!cls) return;
+  cls.poses=cls.poses.filter(x=>x.id!==pid); save();
+  selectedPoseIds.delete(pid);
+  refreshPoseList();
+}
+
+// ── PROPS ──────────────────────────────────────────────────────
+function addProp(e, pid) {
+  if(e.key!=='Enter'&&e.key!==',') return;
+  e.preventDefault();
+  const val=e.target.value.trim().replace(/,$/,''); if(!val) return;
+  const cls=getClass(); if(!cls) return;
+  const p=cls.poses.find(x=>x.id===pid); if(!p) return;
+  p.props=p.props||[];
+  if(!p.props.includes(val)) p.props.push(val);
+  e.target.value=''; save();
+  refreshProps(pid, p.props);
+}
+
+function removeProp(pid, prop) {
+  const cls=getClass(); if(!cls) return;
+  const p=cls.poses.find(x=>x.id===pid); if(!p) return;
+  p.props=(p.props||[]).filter(x=>x!==prop); save();
+  refreshProps(pid, p.props);
+}
+
+function refreshProps(pid, props) {
+  const container=document.getElementById(`pdp-${pid}`); if(!container) return;
+  const inp=container.querySelector('.pd-prop-inp');
+  container.innerHTML=props.map(pr=>`<span class="pd-prop-tag">${esc(pr)} <button onclick="removeProp('${pid}','${pr}')" style="background:none;border:none;cursor:pointer;color:var(--clay);margin-left:2px;">×</button></span>`).join('');
+  if(inp) container.appendChild(inp);
+  else {
+    const ni=document.createElement('input');
+    ni.className='pd-prop-inp'; ni.placeholder='Add prop, press Enter…'; ni.autocomplete='off';
+    ni.setAttribute('onkeydown',`addProp(event,'${pid}')`);
+    container.appendChild(ni);
+  }
+  // Update inline tags on pose row
+  const pb=document.getElementById(`pb-${pid}`);
+  if(pb) {
+    let tagDiv=pb.querySelector('.pose-prop-tags');
+    const tagHtml=props.map(pr=>`<span class="ppt">${esc(pr)}</span>`).join('');
+    if(props.length) {
+      if(tagDiv) tagDiv.innerHTML=tagHtml;
+      else {
+        const sk=pb.querySelector('.pose-sanskrit');
+        if(sk) sk.insertAdjacentHTML('afterend',`<div class="pose-prop-tags">${tagHtml}</div>`);
+      }
+    } else if(tagDiv) tagDiv.remove();
+  }
+}
+
+// ── SELECTION ──────────────────────────────────────────────────
+function toggleSelect(pid) {
+  if(selectedPoseIds.has(pid)) selectedPoseIds.delete(pid);
+  else selectedPoseIds.add(pid);
+  // Update UI for this pose block
+  const pb=document.getElementById(`pb-${pid}`);
+  if(pb) {
+    pb.classList.toggle('selected', selectedPoseIds.has(pid));
+    const chk=pb.querySelector('.pose-check');
+    if(chk) { chk.classList.toggle('on',selectedPoseIds.has(pid)); chk.textContent=selectedPoseIds.has(pid)?'✓':''; }
+  }
+  updateToolbar();
+}
+
+function clearSelection() {
+  selectedPoseIds.forEach(pid=>{
+    const pb=document.getElementById(`pb-${pid}`);
+    if(pb) { pb.classList.remove('selected'); const c=pb.querySelector('.pose-check'); if(c){c.classList.remove('on');c.textContent='';} }
+  });
+  selectedPoseIds=new Set();
+  updateToolbar();
+}
+
+function updateToolbar() {
+  const n=selectedPoseIds.size;
+  const cnt=document.getElementById('sel-count');
+  const gbtn=document.getElementById('group-btn');
+  const ubtn=document.getElementById('ungroup-btn');
+  const cbtn=document.getElementById('clear-sel-btn');
+  if(!cnt) return;
+  const show=n>0;
+  cnt.style.display=show?'':'none';
+  gbtn.style.display=show?'':'none';
+  cbtn.style.display=show?'':'none';
+  cnt.textContent=`${n} pose${n!==1?'s':''} selected`;
+  // Show ungroup only if any selected pose is in a group
+  const cls=getClass();
+  const anyGrouped=cls&&[...selectedPoseIds].some(pid=>{ const p=cls.poses.find(x=>x.id===pid); return p&&p.groupId; });
+  ubtn.style.display=(show&&anyGrouped)?'':'none';
+}
+
+// ── GROUP MODAL ────────────────────────────────────────────────
+function openGroupModal() {
+  const cls=getClass(); if(!cls||!selectedPoseIds.size) return;
+  const title=document.getElementById('group-modal-title');
+  const body=document.getElementById('group-modal-body');
+  const actions=document.getElementById('group-modal-actions');
+  title.textContent=`Group ${selectedPoseIds.size} pose${selectedPoseIds.size!==1?'s':''}`;
+
+  const existingGroups=cls.groups||[];
+  const existingHtml=existingGroups.length ? `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Add to existing group</div>
+      <div class="existing-groups">
+        ${existingGroups.map(g=>`
+          <button class="existing-group-btn" onclick="addToGroup('${g.id}')">
+            ${esc(g.name||'Unnamed Group')}
+            <small>${g.rounds>1?g.rounds+'× ':''} ${g.side&&g.side!=='—'?g.side:''}</small>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Or create new group</div>
+  ` : '';
+
+  body.innerHTML=`
+    ${existingHtml}
+    <div class="modal-field">
+      <label>Group Name</label>
+      <input id="new-group-name" placeholder="e.g. Warm Up, Flow, Cool Down…">
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="modal-field" style="flex:1;">
+        <label>Rounds</label>
+        <input type="number" id="new-group-rounds" value="1" min="1" max="20">
+      </div>
+      <div class="modal-field" style="flex:2;">
+        <label>Side</label>
+        <select id="new-group-side">
+          ${SIDES.map(s=>`<option value="${s}">${s}</option>`).join('')}
+        </select>
+      </div>
+    </div>`;
+
+  actions.innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal('group-modal')">Cancel</button>
+    <button class="btn btn-primary" onclick="createNewGroup()">Create Group</button>`;
+
+  openModal('group-modal');
+  setTimeout(()=>{ const i=document.getElementById('new-group-name'); if(i) i.focus(); },100);
+}
+
+function createNewGroup() {
+  const cls=getClass(); if(!cls) return;
+  const name=document.getElementById('new-group-name').value.trim();
+  const rounds=parseInt(document.getElementById('new-group-rounds').value)||1;
+  const side=document.getElementById('new-group-side').value;
+  const grp={id:'g'+Date.now(), name, rounds, side};
+  cls.groups=cls.groups||[];
+  cls.groups.push(grp);
+  assignToGroup(grp.id);
+}
+
+function addToGroup(gid) {
+  closeModal('group-modal');
+  assignToGroup(gid);
+}
+
+function assignToGroup(gid) {
+  const cls=getClass(); if(!cls) return;
+  selectedPoseIds.forEach(pid=>{
+    const p=cls.poses.find(x=>x.id===pid);
+    if(p) p.groupId=gid;
+  });
+  save(); closeModal('group-modal');
+  clearSelection();
+  refreshPoseList();
+}
+
+function ungroupSelected() {
+  const cls=getClass(); if(!cls) return;
+  selectedPoseIds.forEach(pid=>{
+    const p=cls.poses.find(x=>x.id===pid);
+    if(p) p.groupId=null;
+  });
+  // Clean up empty groups
+  cleanEmptyGroups(cls);
+  save(); clearSelection(); refreshPoseList();
+}
+
+function cleanEmptyGroups(cls) {
+  const usedIds=new Set(cls.poses.map(p=>p.groupId).filter(Boolean));
+  cls.groups=(cls.groups||[]).filter(g=>usedIds.has(g.id));
+}
+
+function deleteGroup(gid) {
+  const cls=getClass(); if(!cls) return;
+  // Remove group from all poses (ungroup them, keep poses)
+  cls.poses.forEach(p=>{ if(p.groupId===gid) p.groupId=null; });
+  cls.groups=(cls.groups||[]).filter(g=>g.id!==gid);
+  save(); refreshPoseList();
+}
+
+function updateGroup(gid, field, value) {
+  const cls=getClass(); if(!cls) return;
+  const g=cls.groups.find(x=>x.id===gid); if(!g) return;
+  g[field]=value; save();
+}
+
+function toggleGroupCollapse(gid) {
+  const hdr = document.getElementById(`ghdr-${gid}`);
+  if (!hdr) return;
+  hdr.classList.toggle('collapsed');
+  // Toggle visibility of all pose blocks in this group
+  const cls = getClass(); if (!cls) return;
+  const isCollapsed = hdr.classList.contains('collapsed');
+  cls.poses.forEach(p => {
+    if (p.groupId === gid) {
+      const pb = document.getElementById(`pb-${p.id}`);
+      if (pb) pb.style.display = isCollapsed ? 'none' : '';
+    }
+  });
+}
+
+// ── REFRESH POSE LIST ──────────────────────────────────────────
+function refreshPoseList() {
+  const cls=getClass(); if(!cls) return;
+  const el=document.getElementById('pose-list');
+  if(el) el.innerHTML=renderPoseList(cls);
+  updateToolbar();
+}
+
+// ── POSE LIBRARY ───────────────────────────────────────────────
+function getLibrary() { return JSON.parse(localStorage.getItem('yogaLibrary') || '[]'); }
+function saveLibrary(lib) { localStorage.setItem('yogaLibrary', JSON.stringify(lib)); }
+
+function saveGroupToLibrary(gid) {
+  const cls = getClass(); if (!cls) return;
+  const grp = cls.groups.find(g=>g.id===gid); if (!grp) return;
+  const poses = cls.poses.filter(p=>p.groupId===gid);
+  if (!poses.length) { alert('This group has no poses to save.'); return; }
+  const lib = getLibrary();
+  const entry = {
+    id: 'lib'+Date.now(),
+    name: grp.name || 'Unnamed Group',
+    rounds: grp.rounds || 1,
+    side: grp.side || '—',
+    savedAt: Date.now(),
+    poses: poses.map(p=>({ name:p.name, sanskrit:p.sanskrit, duration:p.duration, side:p.side, rounds:p.rounds, notes:p.notes, props:[...(p.props||[])] }))
+  };
+  lib.push(entry);
+  saveLibrary(lib);
+  const hdr = document.getElementById(`ghdr-${gid}`);
+  if (hdr) {
+    const saveBtn = [...hdr.querySelectorAll('.group-hdr-btn')].find(b=>b.title==='Save to Library');
+    if (saveBtn) { saveBtn.textContent='★'; setTimeout(()=>{ saveBtn.textContent='☆'; },2000); }
+  }
+  alert(`"${entry.name}" saved to library with ${poses.length} pose${poses.length!==1?'s':''}!`);
+}
+
+function openLibraryModal() {
+  const lib = getLibrary();
+  const body = document.getElementById('library-modal-body');
+  if (!lib.length) {
+    body.innerHTML=`<div class="library-empty">🌿<br><br>Your library is empty.<br>Save a group using the ☆ button on any group header.</div>`;
+  } else {
+    body.innerHTML = lib.map(entry=>`
+      <div class="library-item" onclick="openInsertModal('${entry.id}')">
+        <div class="library-item-info">
+          <div class="library-item-name">${esc(entry.name)}</div>
+          <div class="library-item-meta">${entry.poses.length} pose${entry.poses.length!==1?'s':''} · ${entry.rounds>1?entry.rounds+'× ':''}${entry.side&&entry.side!=='—'?entry.side+' · ':''} Saved ${new Date(entry.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+        </div>
+        <button class="library-item-del" onclick="event.stopPropagation();deleteLibraryEntry('${entry.id}')" title="Remove">✕</button>
+      </div>`).join('');
+  }
+  openModal('library-modal');
+}
+
+function deleteLibraryEntry(lid) {
+  if (!confirm('Remove this from your library?')) return;
+  saveLibrary(getLibrary().filter(e=>e.id!==lid));
+  openLibraryModal();
+}
+
+let pendingLibraryEntryId = null;
+
+function openInsertModal(lid) {
+  closeModal('library-modal');
+  pendingLibraryEntryId = lid;
+  const entry = getLibrary().find(e=>e.id===lid); if (!entry) return;
+  const cls = getClass(); if (!cls) return;
+  document.getElementById('insert-modal-title').textContent = `Insert "${entry.name}"`;
+  const poses = cls.poses || [];
+  let html = poses.map((p,i)=>`
+    <button class="insert-position-btn" onclick="insertLibraryGroup(${i})">
+      Before pose ${i+1}: ${esc(p.name||'Untitled')}
+    </button>`).join('');
+  html += `<button class="insert-position-btn" style="border-color:var(--sage);font-weight:500;" onclick="insertLibraryGroup(${poses.length})">
+    ↓ At the end of sequence
+  </button>`;
+  document.getElementById('insert-modal-body').innerHTML = html;
+  openModal('insert-modal');
+}
+
+function insertLibraryGroup(insertIndex) {
+  const cls = getClass(); if (!cls) return;
+  const entry = getLibrary().find(e=>e.id===pendingLibraryEntryId); if (!entry) return;
+  const newGrp = { id:'g'+Date.now(), name:entry.name, rounds:entry.rounds, side:entry.side };
+  cls.groups = cls.groups || [];
+  cls.groups.push(newGrp);
+  const newPoses = entry.poses.map(p=>({
+    id:uid(), name:p.name, sanskrit:p.sanskrit||lookupSanskrit(p.name),
+    groupId:newGrp.id, duration:p.duration||'', side:p.side||'—',
+    rounds:p.rounds||1, notes:p.notes||'', props:[...(p.props||[])]
+  }));
+  cls.poses.splice(insertIndex, 0, ...newPoses);
+  pendingLibraryEntryId = null;
+  save(); closeModal('insert-modal'); refreshPoseList();
+}
+
+// ── FIELD UPDATES ──────────────────────────────────────────────
+function updateField(field, value) {
+  const cls=getClass(); if(!cls) return;
+  cls[field]=value; save();
+  if(field==='name') renderSidebar(document.getElementById('search-input').value);
+  if(field==='spotifyUrl'&&value.includes('spotify')) {
+    const inp=document.getElementById('spotify-inp');
+    if(inp&&!inp.parentNode.querySelector('.spotify-link')) {
+      const a=document.createElement('a'); a.href=value; a.target='_blank'; a.className='spotify-link'; a.textContent='▶ Open in Spotify';
+      inp.parentNode.appendChild(a);
+    }
+  }
+}
+
+// ── DELETE CLASS ───────────────────────────────────────────────
+function deleteClass(id) { deleteTargetId=id; openModal('delete-modal'); }
+function confirmDelete() {
+  classes=classes.filter(c=>c.id!==deleteTargetId); save(); closeModal('delete-modal');
+  currentClassId=null; renderSidebar('');
+  document.getElementById('main-area').innerHTML=`<div class="welcome"><div class="welcome-icon">🌿</div><h2>Class deleted</h2><p>Select a class or create a new one.</p><button class="btn btn-primary" style="padding:11px 24px;" onclick="newClass()">Create Class</button></div>`;
+}
+
+// ── SAVE ───────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('yogaClasses',JSON.stringify(classes));
+  const s=document.getElementById('save-status'); if(s) s.textContent='Saved · '+new Date().toLocaleTimeString();
+}
+function exportJSON() {
+  const cls=getClass(); if(!cls) return;
+  const b=new Blob([JSON.stringify(cls,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u; a.download=(cls.name||'yoga-class').replace(/\s+/g,'-').toLowerCase()+'.json';
+  a.click(); URL.revokeObjectURL(u);
+}
+
+// ── GOOGLE DRIVE ───────────────────────────────────────────────
+function connectDrive() { loadGapi(CLIENT_ID); closeModal('drive-modal'); }
+function loadGapi(clientId) {
+  if(document.querySelector('script[src*="api.js"]')) return;
+  const s1=document.createElement('script'); s1.src='https://apis.google.com/js/api.js';
+  s1.onload=()=>gapi.load('client',async()=>{
+    await gapi.client.init({discoveryDocs:['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']});
+    gapiInited=true;
+  });
+  document.head.appendChild(s1);
+  const s2=document.createElement('script'); s2.src='https://accounts.google.com/gsi/client';
+  s2.onload=()=>{
+    tokenClient=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:SCOPES,
+      callback:async(resp)=>{
+        if(resp.error){console.error(resp);return;}
+        driveConnected=true; setDriveReady();
+        if(pendingDriveAction==='load') await fetchFromDrive();
+        else await syncToDrive();
+        pendingDriveAction=null;
+      }
+    });
+    gisInited=true;
+  };
+  document.head.appendChild(s2);
+}
+function setDriveReady() {
+  const b=document.getElementById('drive-btn'); if(b){b.textContent='☁ Drive ✓';b.style.color='#b5cdb7';}
+}
+async function saveToDrive() {
+  pendingDriveAction='save';
+  if(!tokenClient){loadGapi(CLIENT_ID);setTimeout(()=>tokenClient&&tokenClient.requestAccessToken({prompt:''}),2500);return;}
+  tokenClient.requestAccessToken({prompt:''});
+}
+async function loadFromDrive() {
+  pendingDriveAction='load';
+  if(!tokenClient){loadGapi(CLIENT_ID);setTimeout(()=>tokenClient&&tokenClient.requestAccessToken({prompt:''}),2500);return;}
+  tokenClient.requestAccessToken({prompt:''});
+}
+async function syncToDrive() {
+  const blob=new Blob([JSON.stringify(classes,null,2)],{type:'application/json'});
+  const search=await gapi.client.drive.files.list({q:`name='${DRIVE_FILE}' and trashed=false`,fields:'files(id)'});
+  const files=search.result.files;
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify({name:DRIVE_FILE,mimeType:'application/json'})],{type:'application/json'}));
+  form.append('file',blob);
+  const has=files&&files.length;
+  const resp=await fetch(has?`https://www.googleapis.com/upload/drive/v3/files/${files[0].id}?uploadType=multipart`:`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`,
+    {method:has?'PATCH':'POST',headers:{Authorization:'Bearer '+gapi.client.getToken().access_token},body:form});
+  if(resp.ok){const s=document.getElementById('save-status');if(s)s.textContent='☁ Synced · '+new Date().toLocaleTimeString();}
+}
+async function fetchFromDrive() {
+  try {
+    const search=await gapi.client.drive.files.list({q:`name='${DRIVE_FILE}' and trashed=false`,fields:'files(id)'});
+    const files=search.result.files;
+    if(!files||!files.length){alert('No saved classes found in Drive.');return;}
+    const resp=await fetch(`https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media`,
+      {headers:{Authorization:'Bearer '+gapi.client.getToken().access_token}});
+    const data=await resp.json();
+    if(Array.isArray(data)&&data.length){
+      classes=data;
+      localStorage.setItem('yogaClasses',JSON.stringify(classes));
+      currentClassId=null; renderSidebar('');
+      document.getElementById('main-area').innerHTML=`<div class="welcome"><div class="welcome-icon">🌿</div><h2>${classes.length} class${classes.length!==1?'es':''} loaded!</h2><p>Select a class from the sidebar.</p></div>`;
+    } else alert('No classes found in your Drive file.');
+  } catch(e){console.error(e);alert('Could not load from Drive.');}
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+renderSidebar();
+loadGapi(CLIENT_ID);
+setTimeout(setDriveReady,2500);
+</script>
+</body>
+</html>
