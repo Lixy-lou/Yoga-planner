@@ -482,7 +482,6 @@ function lookupSanskrit(name) {
 
 const ALL_POSES = Object.keys(SANSKRIT)
   .map(k=>({ english: k.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '), sanskrit: SANSKRIT[k] }))
-  .filter((v,i,a)=>a.findIndex(x=>x.sanskrit===v.sanskrit)===i)
   .sort((a,b)=>a.english.localeCompare(b.english));
 
 // ── STATE ──────────────────────────────────────────────────────
