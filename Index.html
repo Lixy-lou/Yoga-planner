@@ -1508,12 +1508,26 @@ function moveGroup(gid, dir) {
   if (dir === -1 && firstIdx === 0) return; // already at top
   if (dir === 1 && lastIdx === poses.length-1) return; // already at bottom
 
-  // Extract group poses
-  const groupPoses = poses.splice(firstIdx, groupPoseIndices.length);
+  // Find the full span of the adjacent group block before extracting ours
+  let insertIdx;
+  if (dir === 1) {
+    // Moving down: skip the entire next group block (all contiguous poses sharing the same groupId)
+    const adjId = poses[lastIdx + 1].groupId;
+    let adjLast = lastIdx + 1;
+    while (adjLast + 1 < poses.length && poses[adjLast + 1].groupId === adjId) adjLast++;
+    // After splicing out our group at firstIdx, the adjacent block shifts left by our group's size
+    insertIdx = adjLast + 1 - groupPoseIndices.length;
+  } else {
+    // Moving up: skip back over the entire previous group block
+    const adjId = poses[firstIdx - 1].groupId;
+    let adjFirst = firstIdx - 1;
+    while (adjFirst > 0 && poses[adjFirst - 1].groupId === adjId) adjFirst--;
+    insertIdx = adjFirst;
+  }
 
-  // Find new insertion point
-  const newIdx = dir === -1 ? firstIdx - 1 : firstIdx + 1;
-  poses.splice(Math.max(0, Math.min(newIdx, poses.length)), 0, ...groupPoses);
+  // Extract group poses and re-insert past the full adjacent block
+  const groupPoses = poses.splice(firstIdx, groupPoseIndices.length);
+  poses.splice(insertIdx, 0, ...groupPoses);
 
   save(); refreshPoseList();
 }
