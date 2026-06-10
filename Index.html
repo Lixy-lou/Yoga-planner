@@ -163,6 +163,14 @@
   .pd-prop-inp::placeholder { color: #ccc; }
   .pd-prop-inp:focus { border-bottom-color: var(--sage); }
 
+  /* POSE SUGGESTIONS */
+  .pd-sugg-groups { display: flex; flex-direction: column; gap: 5px; margin-top: 1px; }
+  .pd-sugg-group { display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap; }
+  .pd-sugg-group-label { font-size: 10px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; min-width: 56px; padding-top: 3px; flex-shrink: 0; }
+  .pd-sugg-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pd-sugg-btn { padding: 3px 10px; background: var(--cream); border: 1px solid var(--sage-light); border-radius: 20px; font-size: 11px; color: var(--sage-dark); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap; }
+  .pd-sugg-btn:hover { background: var(--sage); color: white; border-color: var(--sage); }
+
   /* QUICK ADD */
   .quick-add-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--cream); border: 1px solid var(--warm); border-top: none; border-radius: 0 0 6px 6px; margin-bottom: 4px; }
   .autocomplete-wrap { position: relative; flex: 1; }
@@ -254,6 +262,16 @@
   .library-item-meta { font-size:11px; color:var(--ink-soft); }
   .library-item-del { background:none; border:none; cursor:pointer; color:#ccc; font-size:16px; padding:2px 4px; border-radius:3px; }
   .library-item-del:hover { color:#c0392b; background:#fde8e8; }
+  .lib-filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; align-items:center; }
+  .lib-filter-chip { padding:3px 10px; border:1px solid var(--warm); border-radius:20px; font-size:12px; color:var(--ink-soft); background:var(--cream); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .lib-filter-chip:hover { border-color:var(--sage); color:var(--sage-dark); }
+  .lib-filter-chip.active { background:var(--sage); border-color:var(--sage); color:#fff; }
+  .library-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; }
+  .library-tag { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; background:#edf3ee; border:1px solid var(--sage-light); border-radius:12px; font-size:10px; color:var(--sage-dark); }
+  .library-tag-del { background:none; border:none; cursor:pointer; padding:0 0 0 2px; font-size:10px; color:var(--ink-soft); line-height:1; }
+  .library-tag-del:hover { color:#c0392b; }
+  .library-tag-add { padding:2px 8px; border:1px dashed var(--warm); border-radius:12px; font-size:10px; color:var(--ink-soft); background:none; cursor:pointer; font-family:inherit; }
+  .library-tag-add:hover { border-color:var(--sage); color:var(--sage-dark); }
   .insert-position-btn { width:100%; padding:10px 14px; border:1px solid var(--warm); border-radius:5px; background:var(--cream); cursor:pointer; text-align:left; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink); margin-bottom:6px; transition:all 0.15s; }
   .insert-position-btn:hover { border-color:var(--sage); background:#edf3ee; color:var(--sage-dark); }
 
@@ -484,6 +502,30 @@ const ALL_POSES = Object.keys(SANSKRIT)
   .map(k=>({ english: k.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '), sanskrit: SANSKRIT[k] }))
   .sort((a,b)=>a.english.localeCompare(b.english));
 
+// ── POSE RELATIONSHIPS (Story 2.13 — top 20 curated) ───────────
+const POSE_RELATIONSHIPS = {
+  "Mountain Pose":         { prep: [],                                                    followUp: ["Standing Forward Fold","Chair Pose","Warrior I"],                    counter: [] },
+  "Standing Forward Fold": { prep: ["Half Standing Forward Fold","Mountain Pose"],        followUp: ["Half Standing Forward Fold","Chair Pose","Mountain Pose"],            counter: ["Mountain Pose"] },
+  "Chair Pose":            { prep: ["Mountain Pose","Standing Forward Fold"],             followUp: ["Standing Forward Fold","Warrior I","Revolved Chair"],                 counter: ["Standing Forward Fold"] },
+  "Warrior I":             { prep: ["Crescent Lunge","Mountain Pose","High Lunge"],       followUp: ["Warrior II","Warrior III","Crescent Lunge"],                          counter: ["Standing Forward Fold","Downward Facing Dog"] },
+  "Warrior II":            { prep: ["Warrior I","Crescent Lunge","Mountain Pose"],        followUp: ["Triangle Pose","Extended Side Angle"],                               counter: ["Standing Forward Fold","Mountain Pose"] },
+  "Triangle Pose":         { prep: ["Warrior II","Extended Side Angle","Mountain Pose"],  followUp: ["Warrior II","Pyramid Pose","Half Moon"],                             counter: ["Standing Forward Fold","Mountain Pose"] },
+  "Crescent Lunge":        { prep: ["Downward Facing Dog","Mountain Pose"],               followUp: ["Warrior I","High Lunge","Warrior II"],                               counter: ["Downward Facing Dog","Standing Forward Fold"] },
+  "Tree Pose":             { prep: ["Mountain Pose","Standing Forward Fold"],             followUp: ["Mountain Pose","Warrior III"],                                       counter: ["Mountain Pose"] },
+  "Downward Facing Dog":   { prep: ["Child's Pose","Cat-Cow","Plank Pose"],              followUp: ["Plank Pose","Standing Forward Fold","Warrior I"],                    counter: ["Child's Pose"] },
+  "Plank Pose":            { prep: ["Table Top","Downward Facing Dog"],                   followUp: ["Chaturanga","Side Plank","Downward Facing Dog"],                     counter: ["Child's Pose"] },
+  "Chaturanga":            { prep: ["Plank Pose"],                                        followUp: ["Upward Facing Dog","Cobra Pose"],                                    counter: ["Child's Pose"] },
+  "Upward Facing Dog":     { prep: ["Cobra Pose","Sphinx Pose","Chaturanga"],             followUp: ["Downward Facing Dog"],                                              counter: ["Child's Pose","Downward Facing Dog"] },
+  "Cobra Pose":            { prep: ["Sphinx Pose","Baby Cobra","Locust Pose"],            followUp: ["Upward Facing Dog","Downward Facing Dog"],                           counter: ["Child's Pose","Seated Forward Fold"] },
+  "Child's Pose":          { prep: ["Cat-Cow","Table Top"],                              followUp: ["Cat-Cow","Downward Facing Dog"],                                     counter: [] },
+  "Cat-Cow":               { prep: ["Table Top","Child's Pose"],                         followUp: ["Child's Pose","Downward Facing Dog","Thread the Needle"],             counter: [] },
+  "Pigeon Pose":           { prep: ["Crescent Lunge","Lizard Pose","Downward Facing Dog"],followUp: ["Downward Facing Dog","Seated Forward Fold"],                        counter: ["Downward Facing Dog"] },
+  "Bridge Pose":           { prep: ["Sphinx Pose","Cobra Pose","Reclined Bound Angle"],   followUp: ["Wheel Pose","Shoulder Stand"],                                      counter: ["Knees to Chest","Supine Twist","Happy Baby"] },
+  "Seated Forward Fold":   { prep: ["Staff Pose","Head to Knee Pose","Bound Angle"],      followUp: ["Head to Knee Pose","Boat Pose"],                                    counter: ["Bridge Pose"] },
+  "Bound Angle":           { prep: ["Easy Pose","Hero Pose"],                             followUp: ["Seated Forward Fold","Wide Angle Seated Forward Fold"],              counter: ["Staff Pose"] },
+  "Dancer Pose":           { prep: ["Mountain Pose","Crescent Lunge","Warrior III"],      followUp: ["Mountain Pose","Standing Forward Fold"],                            counter: ["Standing Forward Fold","Mountain Pose"] },
+};
+
 // ── STATE ──────────────────────────────────────────────────────
 // Data model:
 // class.poses = flat array of pose objects, order = sequence order
@@ -496,6 +538,7 @@ let deleteTargetId = null;
 let selectedPoseIds = new Set();
 let driveConnected = false, gapiInited = false, gisInited = false, tokenClient = null;
 let pendingDriveAction = null;
+let currentLibraryFilter = null;
 const DRIVE_FILE = 'yoga-planner-data.json';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const CLIENT_ID = '92105548723-60tappk2ndsdigtig3469dcuv4fd99dc.apps.googleusercontent.com';
@@ -684,6 +727,29 @@ function renderPoseBlock(p, num, inGroup, idx, total, startHidden=false) {
   (p.props||[]).forEach(pr => summaryChips.push(`<span class="pose-detail-chip">${esc(pr)}</span>`));
   const summaryHtml = summaryChips.length ? `<div class="pose-detail-summary">${summaryChips.join('')}</div>` : '';
 
+  const rel = POSE_RELATIONSHIPS[p.name];
+  let suggHtml = '';
+  if (rel) {
+    const suggGroups = [
+      { label: 'Prep',      items: rel.prep      || [] },
+      { label: 'Follow-up', items: rel.followUp  || [] },
+      { label: 'Counter',   items: rel.counter   || [] },
+    ].filter(g => g.items.length > 0);
+    if (suggGroups.length > 0) {
+      suggHtml = `<div class="pd-field" style="flex:1 1 100%;">
+        <label>Suggestions</label>
+        <div class="pd-sugg-groups">${suggGroups.map(g =>
+          `<div class="pd-sugg-group">
+            <span class="pd-sugg-group-label">${g.label}</span>
+            <div class="pd-sugg-chips">${g.items.map(n =>
+              `<button class="pd-sugg-btn" onclick="addPoseAfter(this.dataset.pid,this.dataset.name)" data-pid="${p.id}" data-name="${esc(n)}">${esc(n)}</button>`
+            ).join('')}</div>
+          </div>`
+        ).join('')}</div>
+      </div>`;
+    }
+  }
+
   return `
     <div class="pose-block ${inGroup?'in-group':'ungrouped'} ${isSelected?'selected':''}" id="pb-${p.id}" ${startHidden?'style="display:none;"':''}>
       <div class="pose-row" onclick="togglePoseDetails('${p.id}')">
@@ -733,6 +799,7 @@ function renderPoseBlock(p, num, inGroup, idx, total, startHidden=false) {
           <label>Cues / Notes</label>
           <textarea rows="2" oninput="updatePoseField('${p.id}','notes',this.value)">${esc(p.notes||'')}</textarea>
         </div>
+        ${suggHtml}
       </div>
     </div>`;
 }
@@ -756,7 +823,11 @@ document.addEventListener('input', function(e) {
   const list = document.getElementById('ac-list');
   if (!list) return;
   if (!val) { list.classList.remove('show'); list.innerHTML=''; return; }
-  const matches = ALL_POSES.filter(p=>p.english.toLowerCase().includes(val)||p.sanskrit.toLowerCase().includes(val)).slice(0,8);
+  const counts = getPoseCounts();
+  const matches = ALL_POSES
+    .filter(p=>p.english.toLowerCase().includes(val)||p.sanskrit.toLowerCase().includes(val))
+    .sort((a,b)=>{ const ca=counts[a.english.toLowerCase()]||0,cb=counts[b.english.toLowerCase()]||0; return cb!==ca?cb-ca:a.english.localeCompare(b.english); })
+    .slice(0,8);
   if (!matches.length) { list.classList.remove('show'); list.innerHTML=''; return; }
   list.innerHTML = matches.map(p=>`<div class="ac-item" data-name="${esc(p.english)}">${p.english} <small>${p.sanskrit}</small></div>`).join('');
   list.classList.add('show');
@@ -800,10 +871,22 @@ function addPoseByButton() {
 function doAddPose(name) {
   if (!name) return;
   const cls = getClass(); if (!cls) return;
+  incrementPoseCount(name);
   const pose = { id:uid(), name, sanskrit:lookupSanskrit(name), groupId:null, duration:'1 breath', side:'N/A', rounds:1, notes:'', props:[] };
   cls.poses.push(pose); save();
   refreshPoseList();
   setTimeout(()=>{ const i=document.getElementById('quick-add-inp'); if(i) i.focus(); },50);
+}
+
+function addPoseAfter(currentPoseId, suggestedPoseName) {
+  const cls = getClass(); if (!cls) return;
+  const idx = cls.poses.findIndex(x => x.id === currentPoseId);
+  if (idx < 0) return;
+  incrementPoseCount(suggestedPoseName);
+  const pose = { id:uid(), name:suggestedPoseName, sanskrit:lookupSanskrit(suggestedPoseName), groupId:null, duration:'1 breath', side:'N/A', rounds:1, notes:'', props:[] };
+  cls.poses.splice(idx + 1, 0, pose);
+  save();
+  refreshPoseList();
 }
 
 // ── POSE ACTIONS ───────────────────────────────────────────────
@@ -1185,6 +1268,7 @@ function doTextImport() {
     groupId, duration:'1 breath', side:'N/A', rounds:1, notes:'', props:[]
   }));
 
+  lines.forEach(name => incrementPoseCount(name));
   cls.poses.push(...newPoses);
   save();
   closeModal('text-import-modal');
@@ -1194,6 +1278,10 @@ function doTextImport() {
 // ── POSE LIBRARY ───────────────────────────────────────────────
 function getLibrary() { return JSON.parse(localStorage.getItem('yogaLibrary') || '[]'); }
 function saveLibrary(lib) { localStorage.setItem('yogaLibrary', JSON.stringify(lib)); }
+function getPoseCounts() { return JSON.parse(localStorage.getItem('poseUseCounts') || '{}'); }
+function savePoseCounts(c) { localStorage.setItem('poseUseCounts', JSON.stringify(c)); }
+function incrementPoseCount(name) { if(!name) return; const c=getPoseCounts(),k=name.toLowerCase().trim(); c[k]=(c[k]||0)+1; savePoseCounts(c); }
+function normaliseTag(raw) { return String(raw||'').trim().toLowerCase().replace(/['"\\<>&]/g,'').slice(0,30); }
 
 function saveGroupToLibrary(gid) {
   const cls = getClass(); if (!cls) return;
@@ -1211,6 +1299,7 @@ function saveGroupToLibrary(gid) {
     rounds: grp.rounds || 1,
     side: grp.side || '—',
     savedAt: Date.now(),
+    tags: [],
     poses: poses.map(p=>({ name:p.name, sanskrit:p.sanskrit, duration:p.duration, side:p.side, rounds:p.rounds, notes:p.notes, props:[...(p.props||[])] }))
   };
 
@@ -1218,16 +1307,22 @@ function saveGroupToLibrary(gid) {
     // Ask user: update existing or save as new
     const choice = confirm(`A library group named "${groupName}" already exists.\n\nOK = Update it with current poses\nCancel = Save as new copy`);
     if (choice) {
-      // Update existing
+      // Update existing — preserve existing tags
+      entry.tags = existing.tags || [];
       const idx = lib.findIndex(e=>e.id===existing.id);
       lib[idx] = entry;
     } else {
-      // Save as new with slightly different name
+      // Save as new copy — prompt for tags
       entry.id = 'lib'+Date.now();
       entry.name = groupName + ' (2)';
+      const tagInput = prompt(`Add category tags for "${entry.name}" (comma-separated, e.g. "morning, restorative"):\nLeave blank to skip.`);
+      entry.tags = tagInput ? tagInput.split(',').map(normaliseTag).filter(Boolean) : [];
       lib.push(entry);
     }
   } else {
+    // New entry — prompt for tags
+    const tagInput = prompt(`Add category tags for "${entry.name}" (comma-separated, e.g. "morning, restorative"):\nLeave blank to skip.`);
+    entry.tags = tagInput ? tagInput.split(',').map(normaliseTag).filter(Boolean) : [];
     lib.push(entry);
   }
 
@@ -1240,21 +1335,78 @@ function saveGroupToLibrary(gid) {
   alert(`"${entry.name}" saved to library with ${poses.length} pose${poses.length!==1?'s':''}!`);
 }
 
+function getAllLibraryTags() {
+  const tags = new Set();
+  getLibrary().forEach(e => (e.tags||[]).forEach(t => tags.add(t)));
+  return [...tags].sort();
+}
+
+function setLibraryFilter(cat) {
+  currentLibraryFilter = cat;
+  openLibraryModal();
+}
+
+function removeLibraryTag(lid, tag, evt) {
+  evt.stopPropagation();
+  const lib = getLibrary();
+  const entry = lib.find(e=>e.id===lid); if (!entry) return;
+  entry.tags = (entry.tags||[]).filter(t=>t!==tag);
+  saveLibrary(lib);
+  openLibraryModal();
+}
+
+function addLibraryTag(lid, evt) {
+  evt.stopPropagation();
+  const raw = prompt('Add a category tag:');
+  if (!raw) return;
+  const tag = normaliseTag(raw);
+  if (!tag) return;
+  const lib = getLibrary();
+  const entry = lib.find(e=>e.id===lid); if (!entry) return;
+  if (!(entry.tags||[]).includes(tag)) {
+    entry.tags = [...(entry.tags||[]), tag];
+    saveLibrary(lib);
+  }
+  openLibraryModal();
+}
+
 function openLibraryModal() {
   const lib = getLibrary();
+  const allTags = getAllLibraryTags();
+  if (currentLibraryFilter && !allTags.includes(currentLibraryFilter)) currentLibraryFilter = null;
+  const filtered = currentLibraryFilter ? lib.filter(e=>(e.tags||[]).includes(currentLibraryFilter)) : lib;
+
   const body = document.getElementById('library-modal-body');
-  if (!lib.length) {
-    body.innerHTML=`<div class="library-empty">🌿<br><br>Your library is empty.<br>Save a group using the ☆ button on any group header.</div>`;
+  let html = '';
+
+  if (allTags.length) {
+    const visibleTags = allTags.slice(0, 10);
+    html += `<div class="lib-filter-bar">
+      <span class="lib-filter-chip${!currentLibraryFilter?' active':''}" onclick="setLibraryFilter(null)">All</span>
+      ${visibleTags.map(t=>`<span class="lib-filter-chip${currentLibraryFilter===t?' active':''}" onclick="setLibraryFilter('${t}')">${esc(t)}</span>`).join('')}
+    </div>`;
+  }
+
+  if (!filtered.length) {
+    html += `<div class="library-empty">🌿<br><br>${lib.length?'No templates in this category.':'Your library is empty.<br>Save a group using the ☆ button on any group header.'}</div>`;
   } else {
-    body.innerHTML = lib.map(entry=>`
+    html += filtered.map(entry => {
+      const tagsHtml = (entry.tags||[]).map(tag=>
+        `<span class="library-tag">${esc(tag)}<button class="library-tag-del" onclick="event.stopPropagation();removeLibraryTag('${entry.id}','${tag}',event)" title="Remove tag">×</button></span>`
+      ).join('') + `<button class="library-tag-add" onclick="event.stopPropagation();addLibraryTag('${entry.id}',event)">＋ tag</button>`;
+      return `
       <div class="library-item" onclick="openInsertModal('${entry.id}')">
         <div class="library-item-info">
           <div class="library-item-name">${esc(entry.name)}</div>
-          <div class="library-item-meta">${entry.poses.length} pose${entry.poses.length!==1?'s':''} · ${entry.rounds>1?entry.rounds+'× ':''}${entry.side&&entry.side!=='—'?entry.side+' · ':''} Saved ${new Date(entry.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+          <div class="library-item-meta">${entry.poses.length} pose${entry.poses.length!==1?'s':''} · ${entry.rounds>1?entry.rounds+'× ':''}${entry.side&&entry.side!=='—'?entry.side+' · ':''}Saved ${new Date(entry.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+          <div class="library-tags">${tagsHtml}</div>
         </div>
         <button class="library-item-del" onclick="event.stopPropagation();deleteLibraryEntry('${entry.id}')" title="Remove">✕</button>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
+
+  body.innerHTML = html;
   openModal('library-modal');
 }
 
@@ -1295,6 +1447,7 @@ function insertLibraryGroup(insertIndex) {
     groupId:newGrp.id, duration:p.duration||'1 breath', side:p.side||'N/A',
     rounds:p.rounds||1, notes:p.notes||'', props:[...(p.props||[])]
   }));
+  newPoses.forEach(p => incrementPoseCount(p.name));
   cls.poses.splice(insertIndex, 0, ...newPoses);
   pendingLibraryEntryId = null;
   save(); closeModal('insert-modal'); refreshPoseList();
@@ -1404,13 +1557,20 @@ async function mergeWithDrive() {
         `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
         { headers: { Authorization: 'Bearer ' + gapi.client.getToken().access_token } }
       );
-      const driveClasses = await resp.json();
+      const driveRaw = await resp.json();
+      const driveClasses = Array.isArray(driveRaw) ? driveRaw : (Array.isArray(driveRaw.classes) ? driveRaw.classes : []);
+      const driveLibrary = Array.isArray(driveRaw) ? [] : (Array.isArray(driveRaw.library) ? driveRaw.library : []);
 
       if (Array.isArray(driveClasses)) {
         const driveIds = new Set(driveClasses.map(c=>c.id));
         const localOnly = classes.filter(c=>!driveIds.has(c.id));
         classes = localOnly.length > 0 ? [...driveClasses, ...localOnly] : driveClasses;
         localStorage.setItem('yogaClasses', JSON.stringify(classes));
+        if (driveLibrary.length) {
+          const driveLibIds = new Set(driveLibrary.map(e=>e.id));
+          const localLibOnly = getLibrary().filter(e=>!driveLibIds.has(e.id));
+          saveLibrary(localLibOnly.length ? [...driveLibrary, ...localLibOnly] : driveLibrary);
+        }
         renderSidebar(document.getElementById('search-input')?.value || '');
         await syncToDrive();
         setSyncStatus('☁ Synced ✓', '#b5cdb7');
@@ -1431,7 +1591,7 @@ async function mergeWithDrive() {
 async function syncToDrive() {
   if (!driveConnected) return;
   try {
-    const blob = new Blob([JSON.stringify(classes,null,2)],{type:'application/json'});
+    const blob = new Blob([JSON.stringify({version:2,classes,library:getLibrary()},null,2)],{type:'application/json'});
     const form = new FormData();
     form.append('metadata', new Blob([JSON.stringify({name:DRIVE_FILE,mimeType:'application/json'})],{type:'application/json'}));
     form.append('file', blob);
