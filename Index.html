@@ -715,7 +715,6 @@ function renderPoseList(cls) {
 
 function renderPoseBlock(p, num, inGroup, idx, total, startHidden=false) {
   const sanskrit = p.sanskrit || lookupSanskrit(p.name);
-  const hasDetails = p.duration || (p.side && p.side !== '—') || p.notes || (p.rounds && p.rounds > 1) || (p.props && p.props.length);
   const isSelected = selectedPoseIds.has(p.id);
   const propTags = (p.props||[]).map(pr=>`<span class="ppt">${esc(pr)}</span>`).join('');
 
@@ -770,7 +769,7 @@ function renderPoseBlock(p, num, inGroup, idx, total, startHidden=false) {
         ${idx<total-1?`<button class="pose-act" onclick="event.stopPropagation();movePose('${p.id}',1)">↓</button>`:''}
         <button class="pose-act del" onclick="event.stopPropagation();deletePose('${p.id}')">✕</button>
       </div>
-      <div class="pose-details ${hasDetails?'open':''}" id="pd-${p.id}">
+      <div class="pose-details" id="pd-${p.id}">
         <div class="pd-field">
           <label>Duration / Breaths</label>
           <input type="text" value="${esc(p.duration||'')}" placeholder="e.g. 5 breaths"
